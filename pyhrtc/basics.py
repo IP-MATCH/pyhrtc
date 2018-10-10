@@ -169,12 +169,13 @@ class Couple(Agent):
                 if second_ind < first_ind:
                     continue
                 if len(first_pref) != 1 or len(second_pref) != 1:
-                    raise NotImplementedError("pyhrtc can't interleave from doctors with ties (yet)")
+                    raise NotImplementedError("pyhrtc can't interleave from doctors with ties")
                 if first_ind == second_ind:
                     new_prefs.append([(first_pref[0], second_pref[0])])
                 else:
                     first_alt = doc1.preferences[second_ind]
                     second_alt = doc2.preferences[first_ind]
-                    new_prefs.append([(first_pref[0], second_pref[0]), (first_alt[0], second_alt[0])])
+                    new_prefs.append([(first_pref[0], second_pref[0]),
+                                      (first_alt[0], second_alt[0])])
         couple.preferences = new_prefs
         return couple

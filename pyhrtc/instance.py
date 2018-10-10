@@ -204,7 +204,9 @@ class Instance(object):
         doctors.
         """
         while number:
-            id1, id2 = list(self._single_doctors.keys())[-2:]
+            if len(self._single_doctors) < 2:
+                raise LookupError("Don't have enough doctors left")
+            id1, id2 = [self._single_doctors.keys()][-2:] # pylint: disable=unbalanced-tuple-unpacking
             first = self._single_doctors[id1]
             second = self._single_doctors[id2]
             couple = Couple.from_two_doctors(first, second)
