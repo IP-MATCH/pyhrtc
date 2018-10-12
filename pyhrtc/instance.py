@@ -132,14 +132,31 @@ class Instance(object):
     """An instance of HRTC.
     """
 
-    def __init__(self):
+    def __init__(self, single_residents=None, couples=None, hospitals=None):
+        """Create an Instance. Note that if any of the parameters are passed
+        in, they are used as is (i.e. not copied) so don't modify the dicts
+        after creating an instance.
+
+        :param dict single_residents: A dictionary of single residents
+        :param dict couples: A dictionary of couples
+        :param dict hospitals: A dictionary of hospitals
+        """
         super().__init__()
 
         # Each of these is a map from ID to the actual entity, so make sure
         # you set IDs appropriately
-        self._single_doctors = {}
-        self._couples = {}
-        self._hospitals = {}
+        if single_residents:
+            self._single_doctors = single_residents
+        else:
+            self._single_doctors = {}
+        if couples:
+            self._couples = couples
+        else:
+            self._couples = {}
+        if hospitals:
+            self._hospitals = hospitals
+        else:
+            self._hospitals = {}
 
     def get_number_of_single_residents(self) -> int:
         """The number of single residents."""

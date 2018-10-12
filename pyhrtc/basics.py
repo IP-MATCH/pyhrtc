@@ -1,6 +1,9 @@
 """Basic elements of HRTC problems."""
 
 
+import random
+
+
 def grouped(things):
     """Given some iterable object, returns an iterator that goes through the
     things in the object two at a time.
@@ -42,6 +45,60 @@ class Agent(object):
         passed in as [[1], [2, 3]].
         """
         self._prefs = new
+
+    def make_random_preferences(self, options, tie_density=0, length=None):
+        """Create a random preference list from the list options, with the
+        given tie density. If length is given, then stop assigning preferences
+        once "length" items have been added.
+        """
+        if length:
+            chosen = random.sample(options, length)
+        else:
+            chosen = list(options)  # Make a copy so we don't shuffle the original
+        random.shuffle(chosen)
+        # Reset preferences
+        self._prefs = []
+        current_tie = []
+        for item in chosen:
+            # If there is a tie, and we want to end it, do so;
+            if current_tie and random.random() >= tie_density:
+                # Start a new tie group
+                self._prefs.append(current_tie)
+                current_tie = []
+            current_tie.append(item)
+        # Don't forget to add the last tie
+        self._prefs.append(current_tie)
+
+    def make_master_list_preferences(self, options, master_list, length=None):
+        """Create a preference list from the list options, with the given tie
+        density and master list. If length is given, then stop assigning
+        preferences once "length" items have been added.
+        """
+        chosen = []
+        for item in master_list:
+            if item in options:
+                chosen.append(item)
+                if length and len(chosen) == length:
+                    break
+        # Reset preferences
+        self._prefs = []
+        for item in chosen:
+            self._prefs.append([item])
+
+    def acceptable_agents(self):
+        """Get the list of acceptable agents for this Agent."""
+        agents = []
+        for tie in self._prefs:
+            agents.extend(tie)
+        return agents
+
+    def is_acceptable(self, ident):
+        """Is the given agent (as identified by their identifier) acceptable for this Agent?
+        """
+        for tie in self._prefs:
+            if ident in tie:
+                return True
+        return False
 
     def preference_string(self):
         """Returns the string of preferences for this agent."""
