@@ -3,18 +3,34 @@
 """
 
 
-import sys
+from argparse import ArgumentParser
 
 from pyhrtc.generator import random_hrtc
 
 
-def main(args):
+def main():
     """ Generates an instance of HRTC according to the supplied parameters
     """
-    instance = random_hrtc(
-    instance.make_couple_from_doctor_pair(int(args[3]))
-    instance.write_to_file(args[2])
+    parser = ArgumentParser(description="Generate an instance of HRTC")
+    # -h is for help, so use -p for programmes
+    parser.add_argument("--programmes", "-p", type=int, required=True,
+                        metavar='P',
+                        help="Number of programmes (hospitals)")
+    parser.add_argument("--residents", "-r", type=int, required=True,
+                        metavar='R',
+                        help="Number of (single) residents")
+    parser.add_argument("--couples", "-c", type=int, required=True,
+                        metavar='C',
+                        help="Number of couples")
+    parser.add_argument("--output", "-o", type=str, required=True,
+                        metavar='FILE',
+                        help="Name of output file")
+    options = parser.parse_args()
+    instance = random_hrtc(number_of_hospitals=options.programmes,
+                           number_of_single_residents=options.residents,
+                           number_of_couples=options.couples)
+    instance.write_to_file(options.output)
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()
