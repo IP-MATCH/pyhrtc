@@ -22,13 +22,17 @@ def main():
     parser.add_argument("--couples", "-c", type=int, required=True,
                         metavar='C',
                         help="Number of couples")
+    parser.add_argument("--master", "-m", required=False,
+                        action='store_true',
+                        help="Do hospitals use a master list of scores to rank doctors")
     parser.add_argument("--output", "-o", type=str, required=True,
                         metavar='FILE',
                         help="Name of output file")
     options = parser.parse_args()
     instance = random_hrtc(number_of_hospitals=options.programmes,
                            number_of_single_residents=options.residents,
-                           number_of_couples=options.couples)
+                           number_of_couples=options.couples,
+                           master_list=options.master)
     instance.write_to_file(options.output)
 
 
