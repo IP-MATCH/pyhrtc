@@ -1,4 +1,5 @@
-"""Read, write and inspect instances of HRTC (and specialisations like SMTI, HRT etc.)
+"""Read, write and inspect instances of HRTC (and specialisations like SMTI,
+HRT etc.)
 """
 
 
@@ -13,7 +14,8 @@ class UnknownFormatException(Exception):
     """An unknown format for the instance file."""
 
     def __init__(self):
-        super().__init__("pyhrtc either does not support or cannot read this file format.")
+        super().__init__("pyhrtc either does not support or " +
+                         "cannot read this file format.")
 
 
 INSTANCE_READERS = {}
@@ -27,6 +29,7 @@ INSTANCE_WRITERS = {}
 instance format, takes as input an Instance object and a filename, and writes
 said instance to the file.
 """
+
 
 def read_hrtc_glasgow_hrtc_nocolon(filename):
     """Reads in an instance of HRTC from filename in the usual Glasgow format,
@@ -60,8 +63,51 @@ def read_hrtc_glasgow_hrtc_nocolon(filename):
     return instance
 
 
+def read_iain_instance(filename):
+    """Reads in an instance of HRTC from filename in Iain's format.
+    """
+    with open(filename, "r") as infile:
+        total_num_residents = int(infile.readline().rstrip())
+        num_hospitals = int(infile.readline().rstrip())
+        num_couples = int(infile.readline().rstrip())
+        num_single_residents = total_num_residents - 2*num_couples
+        infile.readline()  # number jobs
+        infile.readline()  # min pref list
+        infile.readline()  # max pref list
+        infile.readline()  # isEventDist
+        infile.readline()  # res Popularity
+        infile.readline()  # hos Popularity
+        infile.readline()  # empty line
+        instance = Instance()
+        for _ in range(num_couples):
+            line_a = infile.readline().rstrip()
+            line_b = infile.readline().rstrip()
+            id1 = int(line_a.split()[0])
+            id2 = int(line_b.split()[0])
+            couple = Couple(id1, id2)
+            couple.read_individual_preferences(line_a.split()[1:],
+                                               line_b.split()[1:])
+            instance.add_couple(couple)
+        for _ in range(num_single_residents):
+            line = infile.readline()
+            ident = int(line.split()[0])
+            doc = Agent(ident)
+            doc.read_preferences(line.split()[1:])
+            instance.add_doctor(doc)
+        for _ in range(num_hospitals):
+            line = infile.readline()
+            ident = int(line.split()[0])
+            cap = int(line.split()[1])
+            hospital = Hospital(ident, cap)
+            hospital.read_preferences(line.split()[2:])
+            instance.add_hospital(hospital)
+    return instance
+
+
 # Register the instance reader
 INSTANCE_READERS["Glasgow_HRTC_nocolon"] = read_hrtc_glasgow_hrtc_nocolon
+INSTANCE_READERS["Iain"] = read_iain_instance
+
 
 def write_hrtc_glasgow_hrtc_nocolon(instance, filename):
     """Writes an Instance to a file in the Glasgow HRTC, without colons.
@@ -76,7 +122,8 @@ def write_hrtc_glasgow_hrtc_colon(instance, filename):
 
 
 def write_hrtc_glasgow_hrtc(instance, filename, colon):
-    """Writes an Instance to a file in the Glasgow HRTC, either with or without colons.
+    """Writes an Instance to a file in the Glasgow HRTC, either with or without
+    colons.
     """
     if colon:
         colon = ":"
@@ -87,9 +134,11 @@ def write_hrtc_glasgow_hrtc(instance, filename, colon):
         outfile.write("%d\n" % instance.get_number_of_couples())
         outfile.write("%d\n" % instance.get_number_of_hospitals())
         for resident in instance.single_residents:
-            outfile.write("%s%s %s\n" % (resident.ident, colon, resident.preference_string()))
+            outfile.write("%s%s %s\n" % (resident.ident, colon,
+                                         resident.preference_string()))
         for couple in instance.couples:
-            outfile.write("%s%s %s\n" % (couple.split_ident(), colon, couple.preference_string()))
+            outfile.write("%s%s %s\n" % (couple.split_ident(), colon,
+                                         couple.preference_string()))
         for hospital in instance.hospitals:
             outfile.write("%s%s %d%s %s\n" % (hospital.ident, colon,
                                               hospital.capacity, colon,
@@ -119,7 +168,13 @@ def read_hrtc(filename):
                 if ":" in fourth_line:
                     variant = "Glasgow_HRTC_colon"
                 else:
-                    variant = "Glasgow_HRTC_nocolon"
+                    infile.readline()  # 5th line
+                    infile.readline()  # 6th line
+                    seventh_line = infile.readline().rstrip()
+                    if "false" in seventh_line or "true" in seventh_line:
+                        variant = "Iain"
+                    else:
+                        variant = "Glasgow_HRTC_nocolon"
         except ValueError:
             variant = firstline
 
@@ -223,7 +278,7 @@ class Instance(object):
         while number:
             if len(self._single_doctors) < 2:
                 raise LookupError("Don't have enough doctors left")
-            id1, id2 = [self._single_doctors.keys()][-2:] # pylint: disable=unbalanced-tuple-unpacking
+            id1, id2 = [self._single_doctors.keys()][-2:]  # pylint: disable=unbalanced-tuple-unpacking, line-too-long
             first = self._single_doctors[id1]
             second = self._single_doctors[id2]
             couple = Couple.from_two_doctors(first, second)

@@ -173,6 +173,15 @@ class Couple(Agent):
         """
         return "%s %s" % (self._first, self._second)
 
+    def read_individual_preferences(self, tokens_a, tokens_b):
+        """Read in and assign preferences, when preferences are given in two
+        distinct lists of strings.
+        """
+        assert(len(tokens_a) == len(tokens_b))
+        self._prefs = []
+        for one, two in zip(tokens_a, tokens_b):
+            self._refs.append([int(one), int(two)])
+
     def read_preferences(self, tokens):
         """Read in and assign preferences based on the given string.
         """
@@ -180,7 +189,6 @@ class Couple(Agent):
         self._prefs = []
         in_tie = False
         current = []
-        print(tokens)
         for token1, token2 in grouped(tokens):
             if not in_tie:
                 # Tie starting
