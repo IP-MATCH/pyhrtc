@@ -96,6 +96,15 @@ class Agent():
                 count += 1
         return -1
 
+    def tie_density(self):
+        """Get the tie density according to this agent."""
+        if len(self._prefs) == 1 and len(self._prefs[1]) == 1:
+            raise NotImplementedError()
+        count = 0
+        for pref in self._prefs:
+            count += len(pref) - 1
+        return count / (count + len(self._prefs))
+
     def make_random_preferences(self, options, tie_density=0, length=None):
         """Create a random preference list from the list options, with the
         given tie density. If length is given, then stop assigning preferences
