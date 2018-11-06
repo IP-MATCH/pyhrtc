@@ -240,6 +240,7 @@ class Couple(Agent):
                     # Tie ends here
                     current.append((int(token1), int(token2[:-1])))
                     self._preferences.append(current)
+                    in_tie = False
                     current = []
                 else:
                     # Tie keeps going
