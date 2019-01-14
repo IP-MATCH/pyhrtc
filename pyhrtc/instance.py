@@ -104,12 +104,12 @@ def read_iain_instance(filename):
         infile.readline()  # empty line
         instance = Instance()
         for _ in range(num_couples):
-            line_a = infile.readline().rstrip()
+            line = infile.readline().rstrip()
             line_b = infile.readline().rstrip()
-            id1 = int(line_a.split()[0])
-            id2 = int(line_b.split()[0])
-            couple = Couple(id1, id2)
-            couple.read_individual_preferences(line_a.split()[1:],
+            ident = int(line.split()[0])
+            ident2 = int(line_b.split()[0])
+            couple = Couple(ident, ident2)
+            couple.read_individual_preferences(line.split()[1:],
                                                line_b.split()[1:])
             instance.add_couple(couple)
         for _ in range(num_single_residents):
@@ -121,8 +121,7 @@ def read_iain_instance(filename):
         for _ in range(num_hospitals):
             line = infile.readline()
             ident = int(line.split()[0])
-            cap = int(line.split()[1])
-            hospital = Hospital(ident, cap)
+            hospital = Hospital(ident, int(line.split()[1]))
             hospital.read_preferences(line.split()[2:])
             instance.add_hospital(hospital)
     return instance
@@ -211,7 +210,7 @@ def read_hrtc(filename):
     raise UnknownFormatException
 
 
-class Instance(object):
+class Instance():
     """An instance of HRTC.
     """
 
