@@ -287,6 +287,17 @@ class Instance(object):
             del self._single_doctors[id2]
             number -= 1
 
+    def is_SMTI(self):
+        """Returns true if this is an instance of SMTI (aka there are no
+        couples, and each "hospital" has capacity 1.
+        """
+        if self.get_number_of_couples() != 0:
+            return False
+        for hospital in self.hospitals:
+            if hospital.capacity != 1:
+                return False
+        return True
+
     def write_to_file(self, filename, variant="Glasgow_HRTC_nocolon"):
         """Writes the instance to a file."""
         if variant in INSTANCE_WRITERS:

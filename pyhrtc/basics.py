@@ -17,6 +17,7 @@ class Agent(object):
     def __init__(self, ident):
         self._ident = ident
         self._prefs = []
+        self._num_prefs = None
         # This will be a list of lists, with each inner list corresponding to a
         # tie group
 
@@ -29,6 +30,15 @@ class Agent(object):
     def ident(self, new):
         """We cannot change the ID of an agent"""
         raise NotImplementedError
+
+    @property
+    def num_preferences(self):
+        """The number of preferences of this agent, aka the length of its
+        preference list.
+        """
+        if self._num_prefs is None:
+            self._num_prefs = sum([len(x) for x in self.preferences])
+        return self._num_prefs
 
     @property
     def preferences(self):
@@ -45,6 +55,29 @@ class Agent(object):
         passed in as [[1], [2, 3]].
         """
         self._prefs = new
+        self._num_prefs = None
+
+    def rank_of(self, other):
+        """Find the rank of other according to this agent.
+        """
+        for index, group in enumerate(self._prefs):
+            if other.id in group:
+                return index
+        return -1
+
+    def position_of(self, other):
+        """Find the position of other in this preference list. Note that this
+        is not the same as rank, this function assumes an ordering on the
+        elements within a tie, and gives an absolute count on the number of
+        agents before it.
+        """
+        count = 0
+        for group in self._prefs:
+            for item in group:
+                if item == other.id:
+                    return count
+                count += 1
+        return -1
 
     def make_random_preferences(self, options, tie_density=0, length=None):
         """Create a random preference list from the list options, with the
@@ -54,7 +87,7 @@ class Agent(object):
         if length:
             chosen = random.sample(options, length)
         else:
-            chosen = list(options)  # Make a copy so we don't shuffle the original
+            chosen = list(options)  # Copy so we don't shuffle the original
         random.shuffle(chosen)
         # Reset preferences
         self._prefs = []
