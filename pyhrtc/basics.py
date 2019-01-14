@@ -194,6 +194,7 @@ class Hospital(Agent):
         """Not supported."""
         raise NotImplementedError
 
+
 class Couple(Agent):
     """Two agents together."""
 
@@ -215,7 +216,7 @@ class Couple(Agent):
         assert(len(tokens_a) == len(tokens_b))
         self._prefs = []
         for one, two in zip(tokens_a, tokens_b):
-            self._refs.append([int(one), int(two)])
+            self._prefs.append([int(one), int(two)])
 
     def read_preferences(self, tokens):
         """Read in and assign preferences based on the given string.
