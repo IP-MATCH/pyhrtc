@@ -64,8 +64,9 @@ def read_hrtc_glasgow_hrtc_nocolon(filename):
 
 
 def read_smti_glasgow_nocolon(filename):
-    """Reads in an instance of HRTC from filename in the usual Glasgow format,
-    but with no colons.
+    """Reads in an instance of SMTI from filename in the usual Glasgow format,
+    except that agents from the second set are actually "hospitals" with
+    capacity 1.
     """
     with open(filename, "r") as infile:
         infile.readline()  # First line is just 0
@@ -82,7 +83,7 @@ def read_smti_glasgow_nocolon(filename):
             line = infile.readline()
             ident = int(line.split()[0])
             doctor = Agent(ident)
-            doctor.read_preferences(line.split()[1:])
+            doctor.read_preferences(line.split()[2:])
             instance.add_doctor(doctor)
     return instance
 
