@@ -63,6 +63,30 @@ def read_hrtc_glasgow_hrtc_nocolon(filename):
     return instance
 
 
+def read_smti_glasgow_nocolon(filename):
+    """Reads in an instance of HRTC from filename in the usual Glasgow format,
+    but with no colons.
+    """
+    with open(filename, "r") as infile:
+        infile.readline()  # First line is just 0
+        num_hospital = int(infile.readline().rstrip())
+        num_doctor = int(infile.readline().rstrip())
+        instance = Instance()
+        for _ in range(num_hospital):
+            line = infile.readline()
+            ident = int(line.split()[0])
+            hospital = Hospital(ident, 1)
+            hospital.read_preferences(line.split()[1:])
+            instance.add_hospital(hospital)
+        for _ in range(num_doctor):
+            line = infile.readline()
+            ident = int(line.split()[0])
+            doctor = Agent(ident)
+            doctor.read_preferences(line.split()[1:])
+            instance.add_doctor(doctor)
+    return instance
+
+
 def read_iain_instance(filename):
     """Reads in an instance of HRTC from filename in Iain's format.
     """
@@ -107,6 +131,7 @@ def read_iain_instance(filename):
 # Register the instance reader
 INSTANCE_READERS["Glasgow_HRTC_nocolon"] = read_hrtc_glasgow_hrtc_nocolon
 INSTANCE_READERS["Iain"] = read_iain_instance
+INSTANCE_READERS["Glasgow_SMTI_extraline"] = read_smti_glasgow_nocolon
 
 
 def write_hrtc_glasgow_hrtc_nocolon(instance, filename):
@@ -157,24 +182,27 @@ def read_hrtc(filename):
         firstline = infile.readline().rstrip()
         variant = 0
         try:
-            int(firstline)
-            #  second_line contains nothing to help us identify
-            infile.readline().rstrip()
-            third_line = infile.readline().rstrip()
-            if ":" in third_line:
-                variant = "Glasgow_HRT_colon"
-            elif JUST_NUMBER_RE.match(third_line):
-                fourth_line = infile.readline().rstrip()
-                if ":" in fourth_line:
-                    variant = "Glasgow_HRTC_colon"
-                else:
-                    infile.readline()  # 5th line
-                    infile.readline()  # 6th line
-                    seventh_line = infile.readline().rstrip()
-                    if "false" in seventh_line or "true" in seventh_line:
-                        variant = "Iain"
+            first = int(firstline)
+            if first == 0:
+                variant = "Glasgow_SMTI_extraline"
+            else:
+                #  second_line contains nothing to help us identify
+                infile.readline().rstrip()
+                third_line = infile.readline().rstrip()
+                if ":" in third_line:
+                    variant = "Glasgow_HRT_colon"
+                elif JUST_NUMBER_RE.match(third_line):
+                    fourth_line = infile.readline().rstrip()
+                    if ":" in fourth_line:
+                        variant = "Glasgow_HRTC_colon"
                     else:
-                        variant = "Glasgow_HRTC_nocolon"
+                        infile.readline()  # 5th line
+                        infile.readline()  # 6th line
+                        seventh_line = infile.readline().rstrip()
+                        if "false" in seventh_line or "true" in seventh_line:
+                            variant = "Iain"
+                        else:
+                            variant = "Glasgow_HRTC_nocolon"
         except ValueError:
             variant = firstline
 
