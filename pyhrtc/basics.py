@@ -156,11 +156,13 @@ class Agent(object):
         for token in tokens:
             if not in_tie:
                 # Tie starting
-                if token[0] == "(":
+                if token[0] == "(" and token[-1] != ")":
                     in_tie = True
                     current.append(int(token[1:]))
                 else:
                     # Not at all a tie
+                    if token[0] == "(" and token[-1] == ")":
+                        token = token[1:-1]
                     self._prefs.append([int(token)])
             else:
                 # Inside a tie
@@ -168,11 +170,11 @@ class Agent(object):
                     # Tie ends here
                     current.append(int(token[:-1]))
                     self._prefs.append(current)
+                    in_tie = False
                     current = []
                 else:
                     # Tie keeps going
                     current.append(int(token))
-
 
 
 class Hospital(Agent):
