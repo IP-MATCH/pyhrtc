@@ -17,6 +17,8 @@ def max_card_matching(instance):
     :return: The size of the largest matching.
     """
     graph = NxGraph()
+    if instance.get_number_of_couples() != 0:
+        raise Exception("max card matching does not currently support couples")
     for doctor in instance.single_residents:
         graph.add_node(f"d%d" % doctor.ident, bipartite=0)
     for hospital in instance.hospitals:
