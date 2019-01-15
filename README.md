@@ -10,6 +10,9 @@ This package can currently
 * combine some pairs of doctors into couples, and
 * find maximum size matchings (not necessarily stable).
 
+## Status
+![Build status](https://travis-ci.org/IP-MATCH/pyhrtc.svg?branch=master)
+
 ## File formats
 
 Currently this package only really supports what is colloquially known as the Glasgow file format, the format used by researchers working at the University of Glasgow, or their collaborators.
