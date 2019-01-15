@@ -17,19 +17,19 @@ def max_card_matching(instance):
     :return: The size of the largest matching.
     """
     graph = NxGraph()
-    if instance.get_number_of_couples() != 0:
+    if instance.number_of_couples_left() != 0:
         raise Exception("max card matching does not currently support couples")
-    for doctor in instance.single_residents:
-        graph.add_node(f"d%d" % doctor.ident, bipartite=0)
-    for hospital in instance.hospitals:
-        for cap in range(hospital.capacity):
-            graph.add_node(f"h%d_%d" % (hospital.ident, cap), bipartite=1)
-    for doctor in instance.single_residents:
-        for pref_group in doctor.preferences:
-            for hosp_id in pref_group:
-                for cap in range(instance.hospital(hosp_id).capacity):
-                    graph.add_edge(f"d%d" % doctor.ident,
-                                   f"h%d_%d" % (hosp_id, cap))
+    for left in instance.single_agents_left:
+        graph.add_node(f"l%d" % left.ident, bipartite=0)
+    for right in instance.single_agents_right:
+        for cap in range(right.capacity):
+            graph.add_node(f"r%d_%d" % (right.ident, cap), bipartite=1)
+    for left in instance.single_agents_left:
+        for pref_group in left.preferences:
+            for right_id in pref_group:
+                for cap in range(instance.single_agent_right(right_id).capacity):
+                    graph.add_edge(f"l%d" % left.ident,
+                                   f"r%d_%d" % (right_id, cap))
     if is_connected(graph):
         size = len(maximum_matching(graph))
     else:

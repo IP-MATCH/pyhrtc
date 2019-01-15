@@ -178,7 +178,7 @@ class Agent():
                     current.append(int(token))
 
 
-class Hospital(Agent):
+class CapacitatedAgent(Agent):
     """An agent with capacity."""
 
     def __init__(self, ident, capacity):
@@ -187,7 +187,7 @@ class Hospital(Agent):
 
     @property
     def capacity(self):
-        """How many doctors this hospital can support."""
+        """How many other agents can this agent can support."""
         return self._capacity
 
     @capacity.setter
@@ -205,7 +205,7 @@ class Couple(Agent):
         self._second = second
 
     def split_ident(self):
-        """Returns a string representation of the two individual doctors,
+        """Returns a string representation of the two individual agents,
         rather than the combined couple.
         """
         return "%s %s" % (self._first, self._second)
@@ -261,23 +261,23 @@ class Couple(Agent):
         return " ".join([format_tie(tie) for tie in self.preferences])
 
     @staticmethod
-    def from_two_doctors(doc1: Agent, doc2: Agent):
-        """Given two doctors, create a Couple from them.
+    def from_two_agents(agent1: Agent, agent2: Agent):
+        """Given two agents, create a Couple from them.
         """
-        couple = Couple(doc1.ident, doc2.ident)
+        couple = Couple(agent1.ident, agent2.ident)
         new_preferences = []
-        for second_ind, second_pref in enumerate(doc2.preferences):
-            for first_ind, first_pref in enumerate(doc1.preferences):
+        for second_ind, second_pref in enumerate(agent2.preferences):
+            for first_ind, first_pref in enumerate(agent1.preferences):
                 if second_ind < first_ind:
                     continue
                 if len(first_pref) != 1 or len(second_pref) != 1:
-                    raise NotImplementedError("pyhrtc can't interleave " +
-                                              "from doctors with ties")
+                    raise NotImplementedError("pyhrtc can't interleave "
+                                              "from agents with ties")
                 if first_ind == second_ind:
                     new_preferences.append([(first_pref[0], second_pref[0])])
                 else:
-                    first_alt = doc1.preferences[second_ind]
-                    second_alt = doc2.preferences[first_ind]
+                    first_alt = agent1.preferences[second_ind]
+                    second_alt = agent2.preferences[first_ind]
                     new_preferences.append([(first_pref[0], second_pref[0]),
                                             (first_alt[0], second_alt[0])])
         couple.preferences = new_preferences
@@ -304,128 +304,134 @@ class Instance():
         """
         Instance.instance_writers[name] = function
 
-    def __init__(self, single_residents=None, couples=None, hospitals=None):
+    def __init__(self, single_agents_left=None, couples_left=None,
+                 single_agents_right=None):
         """Create an Instance. Note that if any of the parameters are passed
         in, they are used as is (i.e. not copied) so don't modify the dicts
-        after creating an instance.
+        after creating an instance. We use "left" and "right" to refer to the
+        two sides of this instance, and we assume that all agents on the right
+        are CapacitatedAgents, which means they must have a capacity (which may
+        be one).
 
-        :param dict single_residents: A dictionary of single residents
-        :param dict couples: A dictionary of couples
-        :param dict hospitals: A dictionary of hospitals
+        :param dict single_agents_left: A dictionary of single agents on the
+        left side of this instance :param dict couples: A dictionary of couples
+        on the left side of this instance :param dict hospitals: A dictionary
+        of single agents on the right side of this instance
         """
 
         # Each of these is a map from ID to the actual entity, so make sure
         # you set IDs appropriately
-        if single_residents:
-            self._single_doctors = single_residents
+        if single_agents_left:
+            self._single_agents_left = single_agents_left
         else:
-            self._single_doctors = {}
-        if couples:
-            self._couples = couples
+            self._single_agents_left = {}
+        if couples_left:
+            self._couples_left = couples_left
         else:
-            self._couples = {}
-        if hospitals:
-            self._hospitals = hospitals
+            self._couples_left = {}
+        if single_agents_right:
+            self._single_agents_right = single_agents_right
         else:
-            self._hospitals = {}
+            self._single_agents_right = {}
 
-    def get_number_of_single_residents(self) -> int:
-        """The number of single residents."""
-        return len(self._single_doctors)
+    def number_of_single_agents_left(self) -> int:
+        """The number of single residents on the left."""
+        return len(self._single_agents_left)
 
-    def get_number_of_couples(self) -> int:
-        """The number of couples."""
-        return len(self._couples)
+    def number_of_couples_left(self) -> int:
+        """The number of couples on the left."""
+        return len(self._couples_left)
 
-    def get_number_of_hospitals(self) -> int:
-        """The number of hospitals."""
-        return len(self._hospitals)
+    def number_of_single_agents_right(self) -> int:
+        """The number of single agents on the right."""
+        return len(self._single_agents_right)
 
     @property
-    def single_residents(self):
-        """Returns a list of all single residents."""
-        return list(self._single_doctors.values())
+    def single_agents_left(self):
+        """Returns a list of all single agents on the left."""
+        return list(self._single_agents_left.values())
 
-    @single_residents.setter
-    def single_residents(self, new):
+    @single_agents_left.setter
+    def single_agents_left(self, new):
         """Not allowed."""
         raise NotImplementedError
 
     @property
-    def couples(self):
-        """Returns a list of all the couples."""
-        return list(self._couples.values())
+    def couples_left(self):
+        """Returns a list of all the couples on the left."""
+        return list(self._couples_left.values())
 
-    @couples.setter
+    @couples_left.setter
     def couples(self, new):
         """Not allowed."""
         raise NotImplementedError
 
     @property
-    def hospitals(self):
-        """Returns a list of all the hospitals."""
-        return list(self._hospitals.values())
+    def single_agents_right(self):
+        """Returns a list of all the single agents on the right."""
+        return list(self._single_agents_right.values())
 
-    @hospitals.setter
-    def hospitals(self, new):
+    @single_agents_right.setter
+    def single_agents_right(self, new):
         """Not allowed."""
         raise NotImplementedError
 
-    def hospital(self, ident):
-        """Returns the hospital identified by ident.
-        :param ident: The ID of the desired hospital.
+    def single_agent_right(self, ident):
+        """Returns the agent on the right identified by ident.
+        :param ident: The ID of the desired agent.
         :type ident: integer
-        :returns: a hospital
-        :rtype: Hospital
+        :returns: the agent
+        :rtype: CapacitatedAgent
         """
-        return self._hospitals[ident]
+        return self._single_agents_right[ident]
 
-    def add_doctor(self, doctor):
-        """Add a doctor to this instance.
+    def add_agent_left(self, agent):
+        """Add a single agent to the left side of this instance.
         """
-        self._single_doctors[doctor.ident] = doctor
+        self._single_agents_left[agent.ident] = agent
 
-    def add_couple(self, couple):
-        """Adds a couple to this instance.
+    def add_couple_left(self, couple):
+        """Adds a couple to the left side of this instance.
         """
-        self._couples[couple.ident] = couple
+        self._couples_left[couple.ident] = couple
 
-    def add_hospital(self, hospital):
-        """Adds a hospital to this instance.
+    def add_agent_right(self, agent):
+        """Adds an agent to the right side of this instance.
         """
-        self._hospitals[hospital.ident] = hospital
+        self._single_agents_right[agent.ident] = agent
 
-    def make_couple_from_doctor_pair(self, number=1):
-        """Take "number x 2" doctors, and turn them into couples by
-        interleaving. Note that there is no reliable way to select which
-        doctors.
+    def make_couple_from_agent_pair_on_left(self, number=1):
+        """Take "number x 2" agents from the left, and turn them into couples
+        by interleaving. Note that there is no reliable way to select which
+        agents.
         """
         while number:
-            if len(self._single_doctors) < 2:
-                raise LookupError("Don't have enough doctors left")
-            id1, id2 = [self._single_doctors.keys()][-2:]  # pylint: disable=unbalanced-tuple-unpacking, line-too-long
-            first = self._single_doctors[id1]
-            second = self._single_doctors[id2]
-            couple = Couple.from_two_doctors(first, second)
-            self._couples[couple.ident] = couple
-            del self._single_doctors[id1]
-            del self._single_doctors[id2]
+            if len(self._single_agents_left) < 2:
+                raise LookupError("Don't have enough agents left")
+            id1, id2 = [self._single_agents_left.keys()][-2:]  # pylint: disable=unbalanced-tuple-unpacking, line-too-long
+            first = self._single_agents_left[id1]
+            second = self._single_agents_left[id2]
+            couple = Couple.from_two_agents(first, second)
+            self._couples_left[couple.ident] = couple
+            del self._single_agents_left[id1]
+            del self._single_agents_left[id2]
             number -= 1
 
     def is_SMTI(self):
         """Returns true if this is an instance of SMTI (aka there are no
-        couples, and each "hospital" has capacity 1.
+        couples, and each agent on the right has capacity 1.
         """
-        if self.get_number_of_couples() != 0:
+        if self.number_of_couples_left() != 0:
             return False
-        for hospital in self.hospitals:
-            if hospital.capacity != 1:
+        for agent in self.single_agents_right:
+            if agent.capacity != 1:
                 return False
         return True
 
     def write_to_file(self, filename, variant="Glasgow_HRTC_nocolon"):
         """Writes the instance to a file."""
-        if variant in INSTANCE_WRITERS:
-            INSTANCE_WRITERS[variant](self, filename)
+        if variant in Instance.instance_writers:
+            Instance.instance_writers[variant](self, filename)
         else:
-            raise UnknownFormatException
+            raise Exception("pyhrtc either does not support or "
+                            "cannot read this file format.")

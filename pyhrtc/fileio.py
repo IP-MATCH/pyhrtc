@@ -6,7 +6,7 @@ HRT etc.)
 import csv
 import re
 
-from pyhrtc.basics import Agent, Couple, Hospital, Instance
+from pyhrtc.basics import Agent, Couple, CapacitatedAgent, Instance
 from pyhrtc.weightedinstance import WeightedAgent, WeightedInstance
 
 JUST_NUMBER_RE = re.compile(r'^\d+$')
@@ -41,21 +41,21 @@ def read_hrtc_glasgow_hrtc_nocolon(filename):
             ident = int(line.split()[0])
             doc = Agent(ident)
             doc.read_preferences(line.split()[1:])
-            instance.add_doctor(doc)
+            instance.add_agent_left(doc)
         for _ in range(num_couples):
             line = infile.readline()
             id1 = int(line.split()[0])
             id2 = int(line.split()[1])
             couple = Couple(id1, id2)
             couple.read_preferences(line.split()[2:])
-            instance.add_couple(couple)
+            instance.add_couple_left(couple)
         for _ in range(num_hospitals):
             line = infile.readline()
             ident = int(line.split()[0])
             cap = int(line.split()[1])
-            hospital = Hospital(ident, cap)
+            hospital = CapacitatedAgent(ident, cap)
             hospital.read_preferences(line.split()[2:])
-            instance.add_hospital(hospital)
+            instance.add_agent_right(hospital)
     return instance
 
 
@@ -74,13 +74,13 @@ def read_hrt_glasgow_nocolon(filename):
             ident = int(line.split()[0])
             doctor = Agent(ident)
             doctor.read_preferences(line.split()[1:])
-            instance.add_doctor(doctor)
+            instance.add_agent_left(doctor)
         for _ in range(num_hospital):
             line = infile.readline()
             ident = int(line.split()[0])
-            hospital = Hospital(ident, int(line.split()[1]))
+            hospital = CapacitatedAgent(ident, int(line.split()[1]))
             hospital.read_preferences(line.split()[2:])
-            instance.add_hospital(hospital)
+            instance.add_agent_right(hospital)
     return instance
 
 
@@ -108,19 +108,19 @@ def read_iain_instance(filename):
             couple = Couple(ident, ident2)
             couple.read_individual_preferences(line.split()[1:],
                                                line_b.split()[1:])
-            instance.add_couple(couple)
+            instance.add_couple_left(couple)
         for _ in range(num_single_residents):
             line = infile.readline()
             ident = int(line.split()[0])
             doc = Agent(ident)
             doc.read_preferences(line.split()[1:])
-            instance.add_doctor(doc)
+            instance.add_agent_left(doc)
         for _ in range(num_hospitals):
             line = infile.readline()
             ident = int(line.split()[0])
-            hospital = Hospital(ident, int(line.split()[1]))
+            hospital = CapacitatedAgent(ident, int(line.split()[1]))
             hospital.read_preferences(line.split()[2:])
-            instance.add_hospital(hospital)
+            instance.add_agent_right(hospital)
     return instance
 
 
@@ -180,19 +180,19 @@ def write_hrtc_glasgow_hrtc(instance, filename, colon):
     else:
         colon = ""
     with open(filename, "w") as outfile:
-        outfile.write("%d\n" % instance.get_number_of_single_residents())
-        outfile.write("%d\n" % instance.get_number_of_couples())
-        outfile.write("%d\n" % instance.get_number_of_hospitals())
-        for resident in instance.single_residents:
-            outfile.write("%s%s %s\n" % (resident.ident, colon,
-                                         resident.preference_string()))
-        for couple in instance.couples:
+        outfile.write("%d\n" % instance.number_of_single_residents_left())
+        outfile.write("%d\n" % instance.number_of_couples_left())
+        outfile.write("%d\n" % instance.number_of_single_agents_right())
+        for agent in instance.single_agents_left:
+            outfile.write("%s%s %s\n" % (agent.ident, colon,
+                                         agent.preference_string()))
+        for couple in instance.couples_left:
             outfile.write("%s%s %s\n" % (couple.split_ident(), colon,
                                          couple.preference_string()))
-        for hospital in instance.hospitals:
-            outfile.write("%s%s %d%s %s\n" % (hospital.ident, colon,
-                                              hospital.capacity, colon,
-                                              hospital.preference_string()))
+        for agent in instance.single_agents_right:
+            outfile.write("%s%s %d%s %s\n" % (agent.ident, colon,
+                                              agent.capacity, colon,
+                                              agent.preference_string()))
 
 
 Instance.add_writer("Glasgow_HRTC_nocolon", write_hrtc_glasgow_hrtc_nocolon)
