@@ -11,7 +11,7 @@ def grouped(things):
     return zip(*[iter(things)]*2)
 
 
-class Agent(object):
+class Agent():
     """An agent."""
 
     def __init__(self, ident):
@@ -126,7 +126,8 @@ class Agent(object):
         return agents
 
     def is_acceptable(self, ident):
-        """Is the given agent (as identified by their identifier) acceptable for this Agent?
+        """Is the given agent (as identified by their identifier) acceptable
+        for this Agent?
         """
         for tie in self._prefs:
             if ident in tie:
@@ -213,7 +214,6 @@ class Couple(Agent):
         """Read in and assign preferences, when preferences are given in two
         distinct lists of strings.
         """
-        assert(len(tokens_a) == len(tokens_b))
         self._prefs = []
         for one, two in zip(tokens_a, tokens_b):
             self._prefs.append([int(one), int(two)])
@@ -256,7 +256,8 @@ class Couple(Agent):
                 return ""
             if len(tie_as_list) == 1:
                 return "%s %s" % (tie_as_list[0][0], tie_as_list[0][1])
-            return "(%s)" % (" ".join(["%s %s" % (c[0], c[1]) for c in tie_as_list]))
+            return "(%s)" % (" ".join(["%s %s" % (c[0], c[1])
+                                       for c in tie_as_list]))
         return " ".join([format_tie(tie) for tie in self.preferences])
 
     @staticmethod
@@ -270,7 +271,8 @@ class Couple(Agent):
                 if second_ind < first_ind:
                     continue
                 if len(first_pref) != 1 or len(second_pref) != 1:
-                    raise NotImplementedError("pyhrtc can't interleave from doctors with ties")
+                    raise NotImplementedError("pyhrtc can't interleave " +
+                                              "from doctors with ties")
                 if first_ind == second_ind:
                     new_prefs.append([(first_pref[0], second_pref[0])])
                 else:
