@@ -314,9 +314,11 @@ class Instance():
         be one).
 
         :param dict single_agents_left: A dictionary of single agents on the
-        left side of this instance :param dict couples: A dictionary of couples
-        on the left side of this instance :param dict hospitals: A dictionary
-        of single agents on the right side of this instance
+        left side of this instance
+        :param dict couples: A dictionary of couples on the left side of this
+        instance
+        :param dict hospitals: A dictionary of single agents on the right side
+        of this instance
         """
 
         # Each of these is a map from ID to the actual entity, so make sure
@@ -362,7 +364,7 @@ class Instance():
         return list(self._couples_left.values())
 
     @couples_left.setter
-    def couples(self, new):
+    def couples_left(self, new):
         """Not allowed."""
         raise NotImplementedError
 

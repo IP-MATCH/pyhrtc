@@ -80,17 +80,16 @@ class WeightedAgent(Agent):
 
 
 class WeightedInstance(Instance):
-    """Represents an instance of SMTI-GRP. The two "sides" to such an instance
-    are referred to as "ones" and "twos". We assume that both sets of agents
+    """Represents an instance of SMTI-GRP. We assume that both sets of agents
     all have all weights assigned.
 
-    :param ones: One set of WeightedAgent objects
-    :type ones: Dict[:class:`WeightedAgent`]
-    :param twos: The other set of WeightedAgent objects
-    :type twos: Dict[:class:`WeightedAgent`]
+    :param lefts: One set of WeightedAgent objects
+    :type lefts: Dict[:class:`WeightedAgent`]
+    :param rights: The other set of WeightedAgent objects
+    :type rightss: Dict[:class:`WeightedAgent`]
     """
-    def __init__(self, ones, twos):
-        super().__init__(single_residents=ones, hospitals=twos)
+    def __init__(self, lefts, rights):
+        super().__init__(single_agents_left=lefts, single_agents_right=rights)
 
     def threshold(self, threshold):
         """Remove any scores below the given threshold from any agents in this
@@ -98,24 +97,24 @@ class WeightedInstance(Instance):
         :param threshold: The value under which no scores will be considered
         :type threshold: integer
         """
-        for one in self._ones.values():
-            one.threshold(threshold)
-        for two in self._twos.values():
-            two.threshold(threshold)
+        for left in self._single_agents_left.values():
+            left.threshold(threshold)
+        for right in self._single_agents_right.values():
+            right.threshold(threshold)
 
     @property
-    def ones(self):
-        """Returns a list of the WeightedAgents on one side of this SMTI instance.
-        :return: a list of WeightedAgents on one side
+    def agents_left(self):
+        """Returns a list of the WeightedAgents on the left side of this SMTI instance.
+        :return: a list of WeightedAgents on the left side
         :rtype: List[:class:`WeightedAgent`]
         """
-        return self._ones
+        return self._single_agents_left
 
     @property
-    def twos(self):
-        """Returns a list of the WeightedAgents on the second side of this SMTI
+    def agents_right(self):
+        """Returns a list of the WeightedAgents on the right side of this SMTI
         instance.
-        :return: a list of WeightedAgents on the other side
+        :return: a list of WeightedAgents on the right side
         :rtype: List[:class:`WeightedAgent`]
         """
-        return self._twos
+        return self.number_of_single_agents_right

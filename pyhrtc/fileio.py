@@ -132,24 +132,24 @@ def read_smti_grp_table(filename):
     :return: the instance
     :rtype: WeightedInstance
     """
-    ones = {}
-    twos = {}
+    lefts = {}
+    rights = {}
     with open(filename, "r") as infile:
         reader = csv.DictReader(infile)
         topleft_header = reader.fieldnames[0]
-        for one_id in reader.fieldnames[1:]:
-            ones[one_id] = WeightedAgent(one_id)
+        for left_id in reader.fieldnames[1:]:
+            lefts[left_id] = WeightedAgent(left_id)
         for row in reader:
-            two_id = row[topleft_header]
-            two = WeightedAgent(two_id)
-            for one_id, weight in row.items():
-                if one_id == topleft_header:
+            right_id = row[topleft_header]
+            right = WeightedAgent(right_id)
+            for left_id, weight in row.items():
+                if left_id == topleft_header:
                     continue
                 weight = float(weight)
-                two.add_weight(one_id, weight)
-                ones[one_id].add_weight(two.ident, weight)
-            twos[two_id] = two
-    return WeightedInstance(ones, twos)
+                right.add_weight(left_id, weight)
+                lefts[left_id].add_weight(right.ident, weight)
+            rights[right_id] = right
+    return WeightedInstance(lefts, rights)
 
 
 # Register the instance reader
