@@ -4,10 +4,11 @@ pyhrtc is a Python module to inspect various types of stable matching problems. 
 ## Features
 
 This package can currently
-* read instance files in two formats,
-* write instance files, 
-* inspect residents and hospitals, and
-* combine some pairs of doctors into couples.
+* read instance files in multiple formats,
+* write instance files,
+* inspect residents and hospitals,
+* combine some pairs of doctors into couples, and
+* find maximum size matchings (not necessarily stable).
 
 ## File formats
 
@@ -19,6 +20,6 @@ This mostly started as a tool to inspect instances of HRTC for various parameter
 
 ## Can I help?
 
-Yes! If you want to add features, or request features, please just raise an issue. I can't promise anything, but it's good to konw what people want.
+Yes! If you want to add features, or request features, please just raise an issue. I can't promise anything, but it's good to know what people want.
 
 
