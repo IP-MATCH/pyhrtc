@@ -63,28 +63,28 @@ def read_hrtc_glasgow_hrtc_nocolon(filename):
     return instance
 
 
-def read_smti_glasgow_nocolon(filename):
-    """Reads in an instance of SMTI from filename in the usual Glasgow format,
-    except that agents from the second set are actually "hospitals" with
-    capacity 1.
+def read_hrt_glasgow_nocolon(filename):
+    """Reads in an instance of HRT from filename in the usual Glasgow format,
+    except that the first line is a zero, the number of (single-only) residents
+    is on the second line and the number of hospitals is on the third.
     """
     with open(filename, "r") as infile:
         infile.readline()  # First line is just 0
-        num_hospital = int(infile.readline().rstrip())
         num_doctor = int(infile.readline().rstrip())
+        num_hospital = int(infile.readline().rstrip())
         instance = Instance()
-        for _ in range(num_hospital):
-            line = infile.readline()
-            ident = int(line.split()[0])
-            hospital = Hospital(ident, 1)
-            hospital.read_preferences(line.split()[1:])
-            instance.add_hospital(hospital)
         for _ in range(num_doctor):
             line = infile.readline()
             ident = int(line.split()[0])
             doctor = Agent(ident)
-            doctor.read_preferences(line.split()[2:])
+            doctor.read_preferences(line.split()[1:])
             instance.add_doctor(doctor)
+        for _ in range(num_hospital):
+            line = infile.readline()
+            ident = int(line.split()[0])
+            hospital = Hospital(ident, int(line.split()[1]))
+            hospital.read_preferences(line.split()[2:])
+            instance.add_hospital(hospital)
     return instance
 
 
@@ -131,7 +131,7 @@ def read_iain_instance(filename):
 # Register the instance reader
 INSTANCE_READERS["Glasgow_HRTC_nocolon"] = read_hrtc_glasgow_hrtc_nocolon
 INSTANCE_READERS["Iain"] = read_iain_instance
-INSTANCE_READERS["Glasgow_SMTI_extraline"] = read_smti_glasgow_nocolon
+INSTANCE_READERS["Glasgow_HRT_extraline"] = read_hrt_glasgow_nocolon
 
 
 def write_hrtc_glasgow_hrtc_nocolon(instance, filename):
@@ -184,7 +184,7 @@ def read_hrtc(filename):
         try:
             first = int(firstline)
             if first == 0:
-                variant = "Glasgow_SMTI_extraline"
+                variant = "Glasgow_HRT_extraline"
             else:
                 #  second_line contains nothing to help us identify
                 infile.readline().rstrip()
@@ -282,6 +282,15 @@ class Instance():
     def hospitals(self, new):
         """Not allowed."""
         raise NotImplementedError
+
+    def hospital(self, ident):
+        """Returns the hospital identified by ident.
+        :param ident: The ID of the desired hospital.
+        :type ident: integer
+        :returns: a hospital
+        :rtype: Hospital
+        """
+        return self._hospitals[ident]
 
     def add_doctor(self, doctor):
         """Add a doctor to this instance.
