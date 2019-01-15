@@ -3,9 +3,11 @@ HRT etc.)
 """
 
 
+import csv
 import re
 
-from pyhrtc.basics import Agent, Couple, Hospital
+from pyhrtc.basics import Agent, Couple, Hospital, Instance
+from pyhrtc.weightedinstance import WeightedAgent, WeightedInstance
 
 JUST_NUMBER_RE = re.compile(r'^\d+$')
 
@@ -14,7 +16,7 @@ class UnknownFormatException(Exception):
     """An unknown format for the instance file."""
 
     def __init__(self):
-        super().__init__("pyhrtc either does not support or " +
+        super().__init__("pyhrtc either does not support or "
                          "cannot read this file format.")
 
 
@@ -22,12 +24,6 @@ INSTANCE_READERS = {}
 """This dictionary should contain functions that, for a given variant of
 instance format, takes as input a filename and returns an Instance of that
 problem.
-"""
-
-INSTANCE_WRITERS = {}
-"""This dictionary should contain functions that, for a given variant of
-instance format, takes as input an Instance object and a filename, and writes
-said instance to the file.
 """
 
 
@@ -128,10 +124,39 @@ def read_iain_instance(filename):
     return instance
 
 
+def read_smti_grp_table(filename):
+    """Reads an SMTI-GRP instance from a CSV file. The first row and column are
+    expected to be identifiers.
+    :param filename: The name of the file containing the instance
+    :type filename: string
+    :return: the instance
+    :rtype: WeightedInstance
+    """
+    ones = {}
+    twos = {}
+    with open(filename, "r") as infile:
+        reader = csv.DictReader(infile)
+        topleft_header = reader.fieldnames[0]
+        for one_id in reader.fieldnames[1:]:
+            ones[one_id] = WeightedAgent(one_id)
+        for row in reader:
+            two_id = row[topleft_header]
+            two = WeightedAgent(two_id)
+            for one_id, weight in row.items():
+                if one_id == topleft_header:
+                    continue
+                weight = float(weight)
+                two.add_weight(one_id, weight)
+                ones[one_id].add_weight(two.ident, weight)
+            twos[two_id] = two
+    return WeightedInstance(ones, twos)
+
+
 # Register the instance reader
 INSTANCE_READERS["Glasgow_HRTC_nocolon"] = read_hrtc_glasgow_hrtc_nocolon
 INSTANCE_READERS["Iain"] = read_iain_instance
 INSTANCE_READERS["Glasgow_HRT_extraline"] = read_hrt_glasgow_nocolon
+INSTANCE_READERS["SMTI-GRP Table"] = read_smti_grp_table
 
 
 def write_hrtc_glasgow_hrtc_nocolon(instance, filename):
@@ -170,8 +195,8 @@ def write_hrtc_glasgow_hrtc(instance, filename, colon):
                                               hospital.preference_string()))
 
 
-INSTANCE_WRITERS["Glasgow_HRTC_nocolon"] = write_hrtc_glasgow_hrtc_nocolon
-INSTANCE_WRITERS["Glasgow_HRTC_colon"] = write_hrtc_glasgow_hrtc_colon
+Instance.add_writer("Glasgow_HRTC_nocolon", write_hrtc_glasgow_hrtc_nocolon)
+Instance.add_writer("Glasgow_HRTC_colon", write_hrtc_glasgow_hrtc_colon)
 
 
 def read_hrtc(filename):
@@ -182,8 +207,9 @@ def read_hrtc(filename):
         firstline = infile.readline().rstrip()
         variant = 0
         try:
-            first = int(firstline)
-            if first == 0:
+            if "," in firstline:
+                variant = "SMTI-GRP Table"
+            elif int(firstline) == 0:
                 variant = "Glasgow_HRT_extraline"
             else:
                 #  second_line contains nothing to help us identify
@@ -209,135 +235,3 @@ def read_hrtc(filename):
     if variant in INSTANCE_READERS:
         return INSTANCE_READERS[variant](filename)
     raise UnknownFormatException
-
-
-class Instance():
-    """An instance of HRTC.
-    """
-
-    def __init__(self, single_residents=None, couples=None, hospitals=None):
-        """Create an Instance. Note that if any of the parameters are passed
-        in, they are used as is (i.e. not copied) so don't modify the dicts
-        after creating an instance.
-
-        :param dict single_residents: A dictionary of single residents
-        :param dict couples: A dictionary of couples
-        :param dict hospitals: A dictionary of hospitals
-        """
-        super().__init__()
-
-        # Each of these is a map from ID to the actual entity, so make sure
-        # you set IDs appropriately
-        if single_residents:
-            self._single_doctors = single_residents
-        else:
-            self._single_doctors = {}
-        if couples:
-            self._couples = couples
-        else:
-            self._couples = {}
-        if hospitals:
-            self._hospitals = hospitals
-        else:
-            self._hospitals = {}
-
-    def get_number_of_single_residents(self) -> int:
-        """The number of single residents."""
-        return len(self._single_doctors)
-
-    def get_number_of_couples(self) -> int:
-        """The number of couples."""
-        return len(self._couples)
-
-    def get_number_of_hospitals(self) -> int:
-        """The number of hospitals."""
-        return len(self._hospitals)
-
-    @property
-    def single_residents(self):
-        """Returns a list of all single residents."""
-        return list(self._single_doctors.values())
-
-    @single_residents.setter
-    def single_residents(self, new):
-        """Not allowed."""
-        raise NotImplementedError
-
-    @property
-    def couples(self):
-        """Returns a list of all the couples."""
-        return list(self._couples.values())
-
-    @couples.setter
-    def couples(self, new):
-        """Not allowed."""
-        raise NotImplementedError
-
-    @property
-    def hospitals(self):
-        """Returns a list of all the hospitals."""
-        return list(self._hospitals.values())
-
-    @hospitals.setter
-    def hospitals(self, new):
-        """Not allowed."""
-        raise NotImplementedError
-
-    def hospital(self, ident):
-        """Returns the hospital identified by ident.
-        :param ident: The ID of the desired hospital.
-        :type ident: integer
-        :returns: a hospital
-        :rtype: Hospital
-        """
-        return self._hospitals[ident]
-
-    def add_doctor(self, doctor):
-        """Add a doctor to this instance.
-        """
-        self._single_doctors[doctor.ident] = doctor
-
-    def add_couple(self, couple):
-        """Adds a couple to this instance.
-        """
-        self._couples[couple.ident] = couple
-
-    def add_hospital(self, hospital):
-        """Adds a hospital to this instance.
-        """
-        self._hospitals[hospital.ident] = hospital
-
-    def make_couple_from_doctor_pair(self, number=1):
-        """Take "number x 2" doctors, and turn them into couples by
-        interleaving. Note that there is no reliable way to select which
-        doctors.
-        """
-        while number:
-            if len(self._single_doctors) < 2:
-                raise LookupError("Don't have enough doctors left")
-            id1, id2 = [self._single_doctors.keys()][-2:]  # pylint: disable=unbalanced-tuple-unpacking, line-too-long
-            first = self._single_doctors[id1]
-            second = self._single_doctors[id2]
-            couple = Couple.from_two_doctors(first, second)
-            self._couples[couple.ident] = couple
-            del self._single_doctors[id1]
-            del self._single_doctors[id2]
-            number -= 1
-
-    def is_SMTI(self):
-        """Returns true if this is an instance of SMTI (aka there are no
-        couples, and each "hospital" has capacity 1.
-        """
-        if self.get_number_of_couples() != 0:
-            return False
-        for hospital in self.hospitals:
-            if hospital.capacity != 1:
-                return False
-        return True
-
-    def write_to_file(self, filename, variant="Glasgow_HRTC_nocolon"):
-        """Writes the instance to a file."""
-        if variant in INSTANCE_WRITERS:
-            INSTANCE_WRITERS[variant](self, filename)
-        else:
-            raise UnknownFormatException

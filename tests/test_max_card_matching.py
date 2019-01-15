@@ -3,7 +3,7 @@
 
 from nose.tools import eq_, raises
 
-from pyhrtc.instance import read_hrtc
+from pyhrtc.fileio import read_hrtc
 from pyhrtc.algorithms import max_card_matching
 
 

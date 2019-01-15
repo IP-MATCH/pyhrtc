@@ -3,7 +3,7 @@
 
 from nose.tools import eq_
 
-from pyhrtc.instance import read_hrtc
+from pyhrtc.fileio import read_hrtc
 
 def test_reads():
     """Read in test1.instance and test2.instance and check some parameters.
