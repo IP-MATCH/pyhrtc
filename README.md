@@ -11,7 +11,7 @@ This package can currently
 * find maximum size matchings (not necessarily stable).
 
 ## Status
-![Build status](https://travis-ci.org/IP-MATCH/pyhrtc.svg?branch=master)
+[![Build status](https://travis-ci.org/IP-MATCH/pyhrtc.svg?branch=master)](https://travis-ci.org/IP-MATCH/pyhrtc)
 
 ## File formats
 
