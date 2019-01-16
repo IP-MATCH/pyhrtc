@@ -8,9 +8,8 @@ class WeightedAgent(Agent):
     """An agent in an instance of SMTI-GRP.
     """
 
-    def __init__(self, ident):
-        self._ident = ident
-        self._preferences = []
+    def __init__(self, ident, capacity=1):
+        super().__init__(ident, capacity=capacity)
         self._preference_weights = []
         self._sorted_preferences = None
 
@@ -64,8 +63,9 @@ class WeightedAgent(Agent):
         # Do nothing if the list is already sorted.
         if self._sorted_preferences is not None:
             return
-        self._sorted_preferences = sorted(self._preference_weights, False,
-                                          lambda x: x[1])
+        self._sorted_preferences = sorted(self._preference_weights,
+                                          reverse=True,
+                                          key=lambda x: x[1])
         last_weight = None
         self._preferences = []
         group = []
