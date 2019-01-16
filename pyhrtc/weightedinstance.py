@@ -78,6 +78,12 @@ class WeightedAgent(Agent):
         if group:
             self._preferences.append(group)
 
+    def __str__(self):
+        """A human readable string representation of this Agent.
+        """
+        return (f"WeightedAgent %d with preferences: %s" %
+                (self._ident, self.preference_string()))
+
 
 class WeightedInstance(Instance):
     """Represents an instance of SMTI-GRP. We assume that both sets of agents
@@ -118,3 +124,12 @@ class WeightedInstance(Instance):
         :rtype: List[:class:`WeightedAgent`]
         """
         return self.number_of_single_agents_right
+
+    def __str__(self):
+        """A human readable string representation of this instance.
+        """
+        return (f"WeightedInstance with %d single agents on the left, %d "
+                 "couples on the left and %d single agents on the right" %
+                (self.number_of_single_agents_left(),
+                 self.number_of_couples_left(),
+                 self.number_of_single_agents_right()))

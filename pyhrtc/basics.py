@@ -155,7 +155,7 @@ class Agent():
                 return ""
             if len(tie_as_list) == 1:
                 return "%s" % tie_as_list[0]
-            return "(%s)" % (" ".join(tie_as_list))
+            return "(%s)" % (" ".join(map(str, tie_as_list)))
         return " ".join([format_tie(tie) for tie in self.preferences])
 
     def read_preferences(self, tokens):
@@ -252,6 +252,12 @@ class Couple(Agent):
             return "(%s)" % (" ".join(["%s %s" % (c[0], c[1])
                                        for c in tie_as_list]))
         return " ".join([format_tie(tie) for tie in self.preferences])
+
+    def __str__(self):
+        """A human readable string representation of this Agent.
+        """
+        return (f"Agent %d with preferences: %s" % (self._ident,
+                                                    self.preference_string()))
 
     @staticmethod
     def from_two_agents(agent1: Agent, agent2: Agent):
@@ -428,3 +434,12 @@ class Instance():
         else:
             raise Exception("pyhrtc either does not support or "
                             "cannot read this file format.")
+
+    def __str__(self):
+        """A human readable string representation of this instance.
+        """
+        return (f"Instance with %d single agents on the left, %d couples on "
+                "the left and %d single agents on the right" %
+                (self.number_of_single_agents_left(),
+                 self.number_of_couples_left(),
+                 self.number_of_single_agents_right()))
