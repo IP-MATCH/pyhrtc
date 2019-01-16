@@ -416,7 +416,7 @@ class Instance():
         while number:
             if len(self._single_agents_left) < 2:
                 raise LookupError("Don't have enough agents left")
-            id1, id2 = [self._single_agents_left.keys()][-2:]  # pylint: disable=unbalanced-tuple-unpacking, line-too-long
+            id1, id2 = list(self._single_agents_left.keys())[-2:]
             first = self._single_agents_left[id1]
             second = self._single_agents_left[id2]
             couple = Couple.from_two_agents(first, second)
