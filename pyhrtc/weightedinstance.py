@@ -33,6 +33,12 @@ class WeightedAgent(Agent):
         self._sort_preferences()
         return self._preferences
 
+    def weight_of(self, other):
+        """Return the weight of the agent "other", or raises an exception if
+        this agent is not compatible with other.
+        """
+        return self._weights[other]
+
     def threshold(self, threshold):
         """Remove any scores below the given threshold.
         :param threshold: The value under which no scores will be considered

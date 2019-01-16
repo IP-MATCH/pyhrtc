@@ -375,12 +375,21 @@ class Instance():
         """Not allowed."""
         raise NotImplementedError
 
+    def single_agent_left(self, ident):
+        """Returns the agent on the left identified by ident.
+        :param ident: The ID of the desired agent.
+        :type ident: integer
+        :returns: the agent
+        :rtype: Agent
+        """
+        return self._single_agents_left[ident]
+
     def single_agent_right(self, ident):
         """Returns the agent on the right identified by ident.
         :param ident: The ID of the desired agent.
         :type ident: integer
         :returns: the agent
-        :rtype: CapacitatedAgent
+        :rtype: Agent
         """
         return self._single_agents_right[ident]
 
