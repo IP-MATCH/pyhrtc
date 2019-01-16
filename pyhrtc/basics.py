@@ -14,12 +14,13 @@ def grouped(things):
 class Agent():
     """An agent."""
 
-    def __init__(self, ident):
+    def __init__(self, ident, capacity=1):
         self._ident = ident
-        self._preferences = []
-        self._num_preferences = None
+        self._capacity = capacity
         # This will be a list of lists, with each inner list corresponding to a
         # tie group
+        self._preferences = []
+        self._num_preferences = None
 
     @property
     def ident(self):
@@ -29,6 +30,16 @@ class Agent():
     @ident.setter
     def ident(self, new):
         """We cannot change the ID of an agent"""
+        raise NotImplementedError
+
+    @property
+    def capacity(self):
+        """How many other agents can this agent can support."""
+        return self._capacity
+
+    @capacity.setter
+    def capacity(self, new):
+        """Not supported."""
         raise NotImplementedError
 
     @property
@@ -178,24 +189,6 @@ class Agent():
                     current.append(int(token))
 
 
-class CapacitatedAgent(Agent):
-    """An agent with capacity."""
-
-    def __init__(self, ident, capacity):
-        super().__init__(ident)
-        self._capacity = capacity
-
-    @property
-    def capacity(self):
-        """How many other agents can this agent can support."""
-        return self._capacity
-
-    @capacity.setter
-    def capacity(self, new):
-        """Not supported."""
-        raise NotImplementedError
-
-
 class Couple(Agent):
     """Two agents together."""
 
@@ -309,16 +302,14 @@ class Instance():
         """Create an Instance. Note that if any of the parameters are passed
         in, they are used as is (i.e. not copied) so don't modify the dicts
         after creating an instance. We use "left" and "right" to refer to the
-        two sides of this instance, and we assume that all agents on the right
-        are CapacitatedAgents, which means they must have a capacity (which may
-        be one).
+        two sides of this instance.
 
         :param dict single_agents_left: A dictionary of single agents on the
         left side of this instance
-        :param dict couples: A dictionary of couples on the left side of this
-        instance
-        :param dict hospitals: A dictionary of single agents on the right side
-        of this instance
+        :param dict couples_left: A dictionary of couples on the left side of
+        this instance
+        :param dict single_agents_right: A dictionary of single agents on the
+        right side of this instance
         """
 
         # Each of these is a map from ID to the actual entity, so make sure

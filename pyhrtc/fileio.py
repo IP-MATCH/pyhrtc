@@ -6,7 +6,7 @@ HRT etc.)
 import csv
 import re
 
-from pyhrtc.basics import Agent, Couple, CapacitatedAgent, Instance
+from pyhrtc.basics import Agent, Couple, Instance
 from pyhrtc.weightedinstance import WeightedAgent, WeightedInstance
 
 JUST_NUMBER_RE = re.compile(r'^\d+$')
@@ -53,7 +53,7 @@ def read_hrtc_glasgow_hrtc_nocolon(filename):
             line = infile.readline()
             ident = int(line.split()[0])
             cap = int(line.split()[1])
-            hospital = CapacitatedAgent(ident, cap)
+            hospital = Agent(ident, capacity=cap)
             hospital.read_preferences(line.split()[2:])
             instance.add_agent_right(hospital)
     return instance
@@ -78,7 +78,7 @@ def read_hrt_glasgow_nocolon(filename):
         for _ in range(num_hospital):
             line = infile.readline()
             ident = int(line.split()[0])
-            hospital = CapacitatedAgent(ident, int(line.split()[1]))
+            hospital = Agent(ident, capacity=int(line.split()[1]))
             hospital.read_preferences(line.split()[2:])
             instance.add_agent_right(hospital)
     return instance
@@ -118,7 +118,7 @@ def read_iain_instance(filename):
         for _ in range(num_hospitals):
             line = infile.readline()
             ident = int(line.split()[0])
-            hospital = CapacitatedAgent(ident, int(line.split()[1]))
+            hospital = Agent(ident, capacity=int(line.split()[1]))
             hospital.read_preferences(line.split()[2:])
             instance.add_agent_right(hospital)
     return instance
