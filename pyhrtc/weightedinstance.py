@@ -11,6 +11,7 @@ class WeightedAgent(Agent):
     def __init__(self, ident, capacity=1):
         super().__init__(ident, capacity=capacity)
         self._preference_weights = []
+        self._weights = {}
         self._sorted_preferences = None
 
     def add_weight(self, other_ident, weight):
@@ -21,6 +22,7 @@ class WeightedAgent(Agent):
         :type weight: float
         """
         self._preference_weights.append((other_ident, weight))
+        self._weights[other_ident] = weight
 
     @property
     def preferences(self):
@@ -38,7 +40,9 @@ class WeightedAgent(Agent):
         """
         self._sort_preferences()
         while self._sorted_preferences[-1][1] < threshold:
-            self._sorted_preferences.pop()
+            ident, weight = self._sorted_preferences.pop()
+            del self._weights[ident]
+        self._build_preferences()
 
     def better_than(self, ident):
         """Returns the list of WeightedAgent IDs that this agent prefers as good as, or
@@ -57,6 +61,24 @@ class WeightedAgent(Agent):
             result.append(pref[0])
         return result
 
+    def preference_string(self):
+        """Returns the string of preferences for this agent."""
+        def format_agent(ident):
+            """Show an agent as their id and weight."""
+            return "%d (%f)" % (ident, self._weights[ident])
+
+        def format_tie(tie_as_list):
+            """Given a set of tied elements, returns a string representing
+            them, by surrounding with brackets if there is more than one item.
+            """
+            if not tie_as_list:
+                return ""
+            if len(tie_as_list) == 1:
+                return format_agent(tie_as_list[0])
+            return "(%s)" % (" ".join([format_agent(ident)
+                                       for ident in tie_as_list]))
+        return " ".join([format_tie(tie) for tie in self.preferences])
+
     def _sort_preferences(self):
         """Sorts the preferences by score, highest to lowest.
         """
@@ -66,6 +88,12 @@ class WeightedAgent(Agent):
         self._sorted_preferences = sorted(self._preference_weights,
                                           reverse=True,
                                           key=lambda x: x[1])
+        self._build_preferences()
+
+    def _build_preferences(self):
+        """Builds up the preferences structure from the _sorted_preferences
+        structure.
+        """
         last_weight = None
         self._preferences = []
         group = []

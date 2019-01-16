@@ -34,3 +34,9 @@ def test_max_card_matching_hrct():
     """
     instance = read_hrtc("tests/testfiles/test2.instance")
     eq_(max_card_matching(instance), -1)
+
+def test_max_card_matching_smti_grp():
+    """This is a simple instance of SMTI-GRP.
+    """
+    instance = read_hrtc("tests/testfiles/smti-grp-simple.instance")
+    eq_(max_card_matching(instance), 3)
