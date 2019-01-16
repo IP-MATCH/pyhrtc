@@ -138,13 +138,15 @@ def read_smti_grp_table(filename):
         reader = csv.DictReader(infile)
         topleft_header = reader.fieldnames[0]
         for left_id in reader.fieldnames[1:]:
+            left_id = int(left_id)
             lefts[left_id] = WeightedAgent(left_id)
         for row in reader:
-            right_id = row[topleft_header]
+            right_id = int(row[topleft_header])
             right = WeightedAgent(right_id)
             for left_id, weight in row.items():
                 if left_id == topleft_header:
                     continue
+                left_id = int(left_id)
                 weight = float(weight)
                 right.add_weight(left_id, weight)
                 lefts[left_id].add_weight(right.ident, weight)
