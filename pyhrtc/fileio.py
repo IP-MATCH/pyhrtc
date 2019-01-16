@@ -124,6 +124,37 @@ def read_iain_instance(filename):
     return instance
 
 
+def read_smti_grp_table_no_header(filename):
+    """Reads an SMTI-GRP instance from a CSV file. The first two rows indicate
+    the number of rows (first row) and columns (second row) that are in this
+    file, not including the first two rows.
+    :param filename: The name of the file containing the instance
+    :type filename: string
+    :return: the instance
+    :rtype: WeightedInstance
+    """
+    lefts = {}
+    rights = {}
+    with open(filename, "r") as infile:
+        int(infile.readline())
+        columns = int(infile.readline())
+        for left_id in range(1, columns+1):
+            left_id = int(left_id)
+            lefts[left_id] = WeightedAgent(left_id)
+        right_id = 0
+        for line in infile:
+            right_id += 1
+            right = WeightedAgent(right_id)
+            left_id = 0
+            for weight in line.split():
+                left_id += 1
+                weight = float(weight)
+                right.add_weight(left_id, weight)
+                lefts[left_id].add_weight(right.ident, weight)
+            rights[right_id] = right
+    return WeightedInstance(lefts, rights)
+
+
 def read_smti_grp_table(filename):
     """Reads an SMTI-GRP instance from a CSV file. The first row and column are
     expected to be identifiers.
@@ -159,6 +190,7 @@ INSTANCE_READERS["Glasgow_HRTC_nocolon"] = read_hrtc_glasgow_hrtc_nocolon
 INSTANCE_READERS["Iain"] = read_iain_instance
 INSTANCE_READERS["Glasgow_HRT_extraline"] = read_hrt_glasgow_nocolon
 INSTANCE_READERS["SMTI-GRP Table"] = read_smti_grp_table
+INSTANCE_READERS["SMTI-GRP Table no header"] = read_smti_grp_table_no_header
 
 
 def write_hrtc_glasgow_hrtc_nocolon(instance, filename):
@@ -214,8 +246,10 @@ def read_hrtc(filename):
             elif int(firstline) == 0:
                 variant = "Glasgow_HRT_extraline"
             else:
-                #  second_line contains nothing to help us identify
-                infile.readline().rstrip()
+                try:
+                    second_line = int(infile.readline().rstrip())
+                except ValueError:
+                    second_line = None
                 third_line = infile.readline().rstrip()
                 if ":" in third_line:
                     variant = "Glasgow_HRT_colon"
@@ -231,6 +265,8 @@ def read_hrtc(filename):
                             variant = "Iain"
                         else:
                             variant = "Glasgow_HRTC_nocolon"
+                elif second_line and third_line.count(" ") == second_line - 1:
+                    variant = "SMTI-GRP Table no header"
         except ValueError:
             variant = firstline
 
