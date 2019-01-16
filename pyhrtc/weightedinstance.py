@@ -45,9 +45,11 @@ class WeightedAgent(Agent):
         :type threshold: integer
         """
         self._sort_preferences()
-        while self._sorted_preferences[-1][1] < threshold:
-            ident, weight = self._sorted_preferences.pop()
+        while (self._sorted_preferences and
+               self._sorted_preferences[-1][1] < threshold):
+            ident, _ = self._sorted_preferences.pop()
             del self._weights[ident]
+        self._num_preferences = None
         self._build_preferences()
 
     def better_than(self, ident):
