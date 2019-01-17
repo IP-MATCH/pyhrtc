@@ -139,10 +139,20 @@ class WeightedInstance(Instance):
         :param threshold: The value under which no scores will be considered
         :type threshold: integer
         """
+        to_remove = []
         for left in self._single_agents_left.values():
             left.threshold(threshold)
+            if left.is_empty():
+                to_remove.append(left.ident)
+        for ident in to_remove:
+            del self._single_agents_left[ident]
+        to_remove = []
         for right in self._single_agents_right.values():
             right.threshold(threshold)
+            if right.is_empty():
+                to_remove.append(right.ident)
+        for ident in to_remove:
+            del self._single_agents_right[ident]
 
     @property
     def agents_left(self):

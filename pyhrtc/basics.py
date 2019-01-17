@@ -59,6 +59,12 @@ class Agent():
         """
         return self._preferences
 
+    def is_empty(self):
+        """Return True if and only if this Agent has no preferences, and
+        therefore can be safely deleted.
+        """
+        return not self.preferences
+
     @preferences.setter
     def preferences(self, new):
         """Set the preferences of this agent. This must be a list of lists,
