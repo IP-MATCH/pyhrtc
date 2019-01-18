@@ -4,7 +4,7 @@
 from nose.tools import eq_, raises
 
 from pyhrtc.fileio import read_hrtc
-from pyhrtc.algorithms import max_card_matching
+from pyhrtc.algorithms import max_card_matching, max_weight_matching
 
 
 def test_max_card_matching_simple():
@@ -40,3 +40,14 @@ def test_max_card_matching_smti_grp():
     """
     instance = read_hrtc("tests/testfiles/smti-grp-simple.instance")
     eq_(max_card_matching(instance), 3)
+
+
+def test_max_weight_matching():
+    """A simple SMTI-GRP instance.
+    """
+    instance = read_hrtc("tests/testfiles/smti-grp-simple.instance")
+    eq_(max_weight_matching(instance), 200)
+    instance.threshold(30)
+    eq_(max_weight_matching(instance), 197)
+    instance.threshold(50)
+    eq_(max_weight_matching(instance), 177)
