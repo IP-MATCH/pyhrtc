@@ -34,8 +34,12 @@ class WeightedAgent(Agent):
         return self._preferences
 
     def weight_of(self, other):
-        """Return the weight of the agent "other", or raises an exception if
-        this agent is not compatible with other.
+        """Return the weight of matching self with the agent "other", or raises
+        an exception if this agent is not compatible with other.
+        :param other: The ID of the agent whose weight you want
+        :type other: integer
+        :return: the weight of matching self with other
+        :rtype: float
         """
         return self._weights[other]
 
