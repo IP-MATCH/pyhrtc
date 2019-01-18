@@ -32,12 +32,9 @@ def max_card_matching(instance):
                 for cap in range(instance.single_agent_right(right_id).capacity):
                     graph.add_edge(f"l%d" % left.ident,
                                    f"r%d_%d" % (right_id, cap))
-    if is_connected(graph):
-        size = len(maximum_matching(graph))
-    else:
-        size = 0
-        for component in connected_component_subgraphs(graph):
-            size += len(maximum_matching(component))
+    size = 0
+    for component in connected_component_subgraphs(graph):
+        size += len(maximum_matching(component))
     return int(size/2)
 
 
