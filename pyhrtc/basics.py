@@ -22,6 +22,15 @@ class Agent():
         self._preferences = []
         self._num_preferences = None
 
+    def __str__(self):
+        """A human readable string representation of this Agent.
+        """
+        return (f"Agent %d with preferences: %s" % (self._ident,
+                                                    self.preference_string()))
+
+    def __repr__(self):
+        return f"Agent:%d" % self._ident
+
     @property
     def ident(self):
         """The ID of this agent."""
@@ -272,8 +281,12 @@ class Couple(Agent):
     def __str__(self):
         """A human readable string representation of this Agent.
         """
-        return (f"Agent %d with preferences: %s" % (self._ident,
-                                                    self.preference_string()))
+        return (f"Agent (%d, %d) with preferences: %s" % (self._first,
+                                                          self._second,
+                                                          self.preference_string()))
+
+    def __repr__(self):
+        return f"Agent:%d,%d" % (self._first, self._second)
 
     @staticmethod
     def from_two_agents(agent1: Agent, agent2: Agent):
