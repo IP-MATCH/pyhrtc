@@ -91,6 +91,13 @@ class Agent():
                 return index
         return -1
 
+    def trim_after_worst(self, agents):
+        """Given a set of agents, trim this agents preference list by removing
+        anything that occurs after the worst agent in agents.
+        """
+        while not [agent for agent in agents if agent in self._preferences[-1]]:
+            self._preferences.pop(-1)
+
     def position_of(self, other):
         """Find the position of other in this preference list. Note that this
         is not the same as rank, this function assumes an ordering on the
@@ -481,3 +488,57 @@ class Instance():
                 (self.number_of_single_agents_left(),
                  self.number_of_couples_left(),
                  self.number_of_single_agents_right()))
+
+    def preprocess(self, side='L', order=None):
+        """Preprocess this instance, removing any pairs which will definitely
+        not be part of a stable matching.
+        :param side: From which side are we removing preferences, 'L' or 'R'
+        """
+        if order is None:
+            def order(groups):
+                for group in groups:
+                    for agent in group:
+                        yield agent
+        if side == 'L':
+            these = self.single_agents_left
+            other = self.single_agents_right
+            these_agent = self.single_agent_left
+            other_agent = self.single_agent_right
+        else:
+            these = self.single_agents_right
+            other = self.single_agents_left
+            these_agent = self.single_agent_right
+            other_agent = self.single_agent_left
+        for single in these:
+            # Build up sets O and T
+            O = set()
+            T = set()
+            # Go through agents in this preference list according to some
+            # ordering.
+            for each in order(single.preferences):
+                O.add(each)
+                # Add anything that each thinks is at least as good as single
+                for group in other_agent(each).preferences:
+                    for agent in group:
+                        T.add(agent)
+                    if single.ident in group:
+                        break
+                if (sum([other_agent(o).capacity for o in O]) >=
+                    sum([these_agent(t).capacity for t in T])):
+                    single.trim_after_worst(O)
+        self.clean()
+
+    def clean(self):
+        """Clean this instance, removing from preference lists any incompatible
+        agents.
+        """
+        for queue, other_queue in [(self.single_agents_left, self.single_agent_right),
+                                   (self.single_agents_right, self.single_agent_left)]:
+            for agent in queue:
+                new_preferences = []
+                for group in agent.preferences:
+                    new_group = [other for other in group
+                                if other_queue(other).is_acceptable(agent.ident)]
+                    if new_group:
+                        new_preferences.append(group)
+                agent.preferences = new_preferences
