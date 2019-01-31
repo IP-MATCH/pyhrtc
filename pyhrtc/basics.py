@@ -504,22 +504,24 @@ class Instance():
         worst agent in O.
         :param side: From which side are we removing preferences, 'L' or 'R'
         :param order: An iterating function to determine how we build up the
-        set O. It should take 3 parameters: groups, O, T.  Groups is the
-        preferences of the agent, as a List of Lists of IDs. The default
-        implementation is to simply iterate through them in order. More complex
-        ordering functions might look at either O or T to see if yielding a
-        particular agent will significantly increase the size of T, which may
-        be less useful for preprocessing.
+        set O. It should take 5 parameters: agent, instance, O, T, and side.
+        Agent is an Agent object, the one whose list we are preprocessing. The
+        default implementation is to simply iterate through the preferences of
+        this agent in order. More complex ordering functions might look at
+        either O or T to see if yielding a particular agent will significantly
+        increase the size of T, which may be less useful for preprocessing.
+        instance is this instance, which may be useful when designing these
+        more complex orderings. Side is as for this function.
         :return: How many preferences have been removed. Note that if the pair
         (a,b) is now no longer considered, this counts as one removal, not two.
         """
         removed = 0
         if order is None:
-            def order(groups, O, T):
-                for group in groups:
-                    for agent in group:
-                        if agent not in O:
-                          yield agent
+            def order(agent, instance, O, T, side):
+                for group in agent.preferences:
+                    for other_agent in group:
+                        if other_agent not in O:
+                          yield other_agent
         if side == 'L':
             these = self.single_agents_left
             other = self.single_agents_right
@@ -536,7 +538,7 @@ class Instance():
             T = set()
             # Go through agents in this preference list according to some
             # ordering.
-            for each in order(single.preferences, O, T):
+            for each in order(single, self, O, T, side):
                 O.add(each)
                 # Add anything that each thinks is at least as good as single
                 for group in other_agent(each).preferences:
