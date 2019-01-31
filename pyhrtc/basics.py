@@ -94,9 +94,13 @@ class Agent():
     def trim_after_worst(self, agents):
         """Given a set of agents, trim this agents preference list by removing
         anything that occurs after the worst agent in agents.
+        :param agents: An Iterable containing agent IDs
+        :return: The number of preferences removed
         """
+        removed = 0
         while not [agent for agent in agents if agent in self._preferences[-1]]:
-            self._preferences.pop(-1)
+            removed += len(self._preferences.pop(-1))
+        return removed
 
     def position_of(self, other):
         """Find the position of other in this preference list. Note that this
@@ -492,13 +496,30 @@ class Instance():
     def preprocess(self, side='L', order=None):
         """Preprocess this instance, removing any pairs which will definitely
         not be part of a stable matching.
+        For each agent l on the Left, we build up a set O containing elements
+        from the Right.  Then we set T to be all those agents on the Left which
+        any agent from O considers at least as good as l.  If the total
+        capacity of O is >= the total capacity of T, then in a stable matching
+        l will be matched with an agent that l thinks is no worse than the
+        worst agent in O.
         :param side: From which side are we removing preferences, 'L' or 'R'
+        :param order: An iterating function to determine how we build up the
+        set O. It should take 3 parameters: groups, O, T.  Groups is the
+        preferences of the agent, as a List of Lists of IDs. The default
+        implementation is to simply iterate through them in order. More complex
+        ordering functions might look at either O or T to see if yielding a
+        particular agent will significantly increase the size of T, which may
+        be less useful for preprocessing.
+        :return: How many preferences have been removed. Note that if the pair
+        (a,b) is now no longer considered, this counts as one removal, not two.
         """
+        removed = 0
         if order is None:
-            def order(groups):
+            def order(groups, O, T):
                 for group in groups:
                     for agent in group:
-                        yield agent
+                        if agent not in O:
+                          yield agent
         if side == 'L':
             these = self.single_agents_left
             other = self.single_agents_right
@@ -515,7 +536,7 @@ class Instance():
             T = set()
             # Go through agents in this preference list according to some
             # ordering.
-            for each in order(single.preferences):
+            for each in order(single.preferences, O, T):
                 O.add(each)
                 # Add anything that each thinks is at least as good as single
                 for group in other_agent(each).preferences:
@@ -525,8 +546,9 @@ class Instance():
                         break
                 if (sum([other_agent(o).capacity for o in O]) >=
                     sum([these_agent(t).capacity for t in T])):
-                    single.trim_after_worst(O)
+                    removed += single.trim_after_worst(O)
         self.clean()
+        return removed
 
     def clean(self):
         """Clean this instance, removing from preference lists any incompatible
