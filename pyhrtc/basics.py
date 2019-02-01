@@ -165,11 +165,21 @@ class Agent():
             self._preferences.append([item])
 
     def acceptable_agents(self):
-        """Get the list of acceptable agents for this Agent."""
-        agents = []
+        """An iterator for acceptable agents for this Agent."""
         for tie in self._preferences:
-            agents.extend(tie)
-        return agents
+            for agent in tie:
+                yield agent
+
+    def as_good_as(self, other):
+        """An iterator for all agent IDs that this agent thinks are at least as good as other.
+        :param other: an Agent ID
+        :return: An iterator of Agent IDs
+        """
+        for tie in self._preferences:
+            for agent in tie:
+                yield agent
+            if other in tie:
+                break
 
     def is_acceptable(self, ident):
         """Is the given agent (as identified by their identifier) acceptable
