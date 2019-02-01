@@ -574,5 +574,5 @@ class Instance():
                     new_group = [other for other in group
                                 if other_queue(other).is_acceptable(agent.ident)]
                     if new_group:
-                        new_preferences.append(group)
+                        new_preferences.append(new_group)
                 agent.preferences = new_preferences
