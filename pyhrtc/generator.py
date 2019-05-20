@@ -3,8 +3,7 @@
 
 import random
 
-from pyhrtc.basics import Agent, Couple, Hospital
-from pyhrtc.instance import Instance
+from pyhrtc.basics import Agent, Couple, Instance
 
 SCORE_MU = 80
 SCORE_SIGMA = 5
@@ -49,7 +48,7 @@ def gen_capacities(total, hospitals, even_posts):
 
 
 def random_hrtc(number_of_hospitals, number_of_single_residents,
-                number_of_couples, resident_pref_length=None,
+                number_of_couples=0, resident_pref_length=None,
                 hospital_pref_length=None, capacity=None, even_posts=False,
                 resident_tie_density=0, hospital_tie_density=0,
                 master_list=False, start_at_one=False):
@@ -79,7 +78,7 @@ def random_hrtc(number_of_hospitals, number_of_single_residents,
         capacity = number_of_single_residents + 2 * number_of_couples
     capacities = gen_capacities(capacity, number_of_hospitals, even_posts)
     # Generate all the hospitals and agents
-    hospitals = {ident + start_at_one: Hospital(ident + start_at_one,
+    hospitals = {ident + start_at_one: Agent(ident + start_at_one,
                                                 capacities[ident]) for ident in
                  range(number_of_hospitals)}
     single_residents = {ident + start_at_one: Agent(ident + start_at_one)
@@ -122,6 +121,6 @@ def random_hrtc(number_of_hospitals, number_of_single_residents,
         couple = Couple.from_two_doctors(couple_doctors[offset],
                                          couple_doctors[offset + 1])
         couples[couple.ident] = couple
-    instance = Instance(single_residents=single_residents, couples=couples,
-                        hospitals=hospitals)
+    instance = Instance(single_agents_left=single_residents, couples_left=couples,
+                        single_agents_right=hospitals)
     return instance

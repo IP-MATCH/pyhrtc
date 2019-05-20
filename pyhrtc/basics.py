@@ -494,6 +494,14 @@ class Instance():
             raise Exception("pyhrtc either does not support or "
                             "cannot read this file format.")
 
+    def long_string(self):
+        """Write a long human-readable description of this instance.
+        """
+        return ("\n".join([str(agent) for agent in self.single_agents_left]) +
+                "\n" +
+                "\n".join([str(agent) for agent in self.single_agents_right]) +
+                "\n")
+
     def __str__(self):
         """A human readable string representation of this instance.
         """
@@ -514,53 +522,71 @@ class Instance():
         worst agent in O.
         :param side: From which side are we removing preferences, 'L' or 'R'
         :param order: An iterating function to determine how we build up the
-        set O. It should take 5 parameters: agent, instance, O, T, and side.
-        Agent is an Agent object, the one whose list we are preprocessing. The
-        default implementation is to simply iterate through the preferences of
-        this agent in order. More complex ordering functions might look at
-        either O or T to see if yielding a particular agent will significantly
-        increase the size of T, which may be less useful for preprocessing.
-        instance is this instance, which may be useful when designing these
-        more complex orderings. Side is as for this function.
+        set positions. It should take 5 parameters: agent, instance, positions,
+        candidates, and side.  Agent is an Agent object, the one whose list we
+        are preprocessing. The default implementation is to simply iterate
+        through the preferences of this agent in order. More complex ordering
+        functions might look at either positions or candidates to see if
+        yielding a particular agent will significantly increase the size of
+        candidates, which may be less useful for preprocessing.  instance is
+        this instance, which may be useful when designing these more complex
+        orderings. Side is as for this function.
         :return: How many preferences have been removed. Note that if the pair
         (a,b) is now no longer considered, this counts as one removal, not two.
         """
         removed = 0
         if order is None:
-            def order(agent, instance, O, T, side):
+            def order(agent, instance, positions, candidates, side):
                 for group in agent.preferences:
                     for other_agent in group:
-                        if other_agent not in O:
+                        if other_agent not in positions:
                           yield other_agent
         if side == 'L':
+            print("looking at doctors")
             these = self.single_agents_left
             other = self.single_agents_right
             these_agent = self.single_agent_left
             other_agent = self.single_agent_right
         else:
+            print("looking at hospitals")
             these = self.single_agents_right
             other = self.single_agents_left
             these_agent = self.single_agent_right
             other_agent = self.single_agent_left
         for single in these:
-            # Build up sets O and T
-            O = set()
-            T = set()
+            positions = set()
+            candidates = set()
             # Go through agents in this preference list according to some
             # ordering.
-            for each in order(single, self, O, T, side):
-                O.add(each)
+            for each in order(single, self, positions, candidates, side):
+                positions.add(each)
                 # Add anything that each thinks is at least as good as single
                 for group in other_agent(each).preferences:
                     for agent in group:
-                        T.add(agent)
+                        candidates.add(agent)
                     if single.ident in group:
                         break
-                if (sum([other_agent(o).capacity for o in O]) >=
-                    sum([these_agent(t).capacity for t in T])):
-                    removed += single.trim_after_worst(O)
-        self.clean()
+                if (sum([other_agent(pos).capacity for pos in positions]) >=
+                    sum([these_agent(cand).capacity for cand in candidates])):
+                    removed += single.trim_after_worst(positions)
+                    self.clean_one(single, other)
         return removed
+
+    def clean_one(self, agent, other_side):
+        """Clean this instance, removing incompatible agents. This variant
+        knows which agent has had its preferences edited, so it only goes
+        through one set of agents, and only looks to remove one particular
+        agent from a preference group.
+        """
+        found = False
+        for other in other_side:
+            for group in other.preferences:
+                if agent.ident in group and not agent.is_acceptable(other.ident):
+                    group.remove(agent.ident)
+                    found = True
+                    break
+            if found:
+                other.preferences = [group for group in other.preferences if group]
 
     def clean(self):
         """Clean this instance, removing from preference lists any incompatible
@@ -576,3 +602,6 @@ class Instance():
                     if new_group:
                         new_preferences.append(new_group)
                 agent.preferences = new_preferences
+
+
+import pyhrtc.fileio

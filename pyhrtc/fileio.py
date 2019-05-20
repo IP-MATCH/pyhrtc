@@ -214,7 +214,7 @@ def write_hrtc_glasgow_hrtc(instance, filename, colon):
     else:
         colon = ""
     with open(filename, "w") as outfile:
-        outfile.write("%d\n" % instance.number_of_single_residents_left())
+        outfile.write("%d\n" % instance.number_of_single_agents_left())
         outfile.write("%d\n" % instance.number_of_couples_left())
         outfile.write("%d\n" % instance.number_of_single_agents_right())
         for agent in instance.single_agents_left:
@@ -229,13 +229,31 @@ def write_hrtc_glasgow_hrtc(instance, filename, colon):
                                               agent.preference_string()))
 
 
+def write_hrtc_edin_hrtc(instance, filename):
+    """Writes an Instance to a file in the Edinburgh? HRTC format
+    """
+    with open(filename, "w") as outfile:
+        outfile.write("0\n")
+        outfile.write("%d\n" % instance.number_of_single_agents_left())
+        outfile.write("%d\n" % instance.number_of_single_agents_right())
+        for agent in instance.single_agents_left:
+            outfile.write("%s %s\n" % (agent.ident, agent.preference_string()))
+        for agent in instance.single_agents_right:
+            outfile.write("%s %d %s\n" % (agent.ident, agent.capacity,
+                                          agent.preference_string()))
+
+
 Instance.add_writer("Glasgow_HRTC_nocolon", write_hrtc_glasgow_hrtc_nocolon)
 Instance.add_writer("Glasgow_HRTC_colon", write_hrtc_glasgow_hrtc_colon)
+Instance.add_writer("Edin_HRTC", write_hrtc_edin_hrtc)
 
 
-def read_hrtc(filename):
-    """Reads an instance of HRTC from the given file and returns the resulting
-    Instance object.
+def read_hrtc_filetype(filename):
+    """Given the name of a file containing an instance of HRTC, tries to
+    determine the variant.
+
+    :param filename: The name of the file to read
+    :return: the variant as a string
     """
     with open(filename, "r") as infile:
         firstline = infile.readline().rstrip()
@@ -269,7 +287,19 @@ def read_hrtc(filename):
                     variant = "SMTI-GRP Table no header"
         except ValueError:
             variant = firstline
+    return variant
 
+
+def read_hrtc(filename, variant=None):
+    """Reads an instance of HRTC from the given file and returns the resulting
+    Instance object.
+
+    :param filename: The name of the file to read
+    :param variant: The type of the file. If not present, will be autodetected.
+    :return: An instance of HRTC
+    """
+    if variant is None:
+        variant = read_hrtc_filetype(filename)
     if variant in INSTANCE_READERS:
         return INSTANCE_READERS[variant](filename)
     raise UnknownFormatException
