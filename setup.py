@@ -11,11 +11,11 @@ setuptools.setup(
     description="Various algorithms and utilities for stable matching problems",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/wpettersson/pyhrtc",
+    url="https://github.com/IP-MATCH/pyhrtc",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "LICENSE :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Development Status :: 4 - Beta",
         "Operating System :: OS Independent",
     ],
