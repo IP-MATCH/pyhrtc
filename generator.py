@@ -22,6 +22,9 @@ def main():
     parser.add_argument("--couples", "-c", type=int, required=True,
                         metavar='C',
                         help="Number of couples")
+    parser.add_argument("--index-one", required=False, default=False,
+                        action='store_true',
+                        help="Index doctors/hospitals from 1, not 0.")
     parser.add_argument("--master", "-m", required=False,
                         action='store_true',
                         help="Do hospitals use a master list of scores to rank doctors")
@@ -32,8 +35,9 @@ def main():
     instance = random_hrtc(number_of_hospitals=options.programmes,
                            number_of_single_residents=options.residents,
                            number_of_couples=options.couples,
-                           master_list=options.master)
-    instance.write_to_file(options.output)
+                           master_list=options.master,
+                           start_at_one=options.index_one)
+    instance.write_to_file(options.output, variant='Edin_HRTC')
 
 
 if __name__ == "__main__":
