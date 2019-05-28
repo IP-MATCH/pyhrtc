@@ -42,3 +42,38 @@ def test_grp_solve():
     model.dummy_variables = True
     matching = model.solve()
     eq_(len(matching), 3)
+
+
+def test_grp_thresholds():
+    """Solve GRP instances with thresholding
+    """
+    instance = read_hrtc("tests/testfiles/smti-grp-thresholds.instance")
+    model = MAX_SMTI_IP(instance)
+    matching = model.solve()
+    eq_(len(matching), 3)
+    instance = read_hrtc("tests/testfiles/smti-grp-thresholds.instance")
+    instance.threshold(80)
+    model = MAX_SMTI_IP(instance)
+    matching = model.solve()
+    eq_(len(matching), 2)
+    instance = read_hrtc("tests/testfiles/smti-grp-thresholds.instance")
+    instance.threshold(80)
+    model = MAX_SMTI_IP(instance)
+    model.weighted = True
+    matching = model.solve()
+    eq_(len(matching), 2)
+
+
+def test_grp_solve_weighted():
+    """Solve GRP instances
+    """
+    instance = read_hrtc("tests/testfiles/smti-grp-diff-maxweight.instance")
+    model = MAX_SMTI_IP(instance)
+    matching = model.solve()
+    eq_(len(matching), 4)
+    instance = read_hrtc("tests/testfiles/smti-grp-diff-maxweight.instance")
+    instance.threshold(5)
+    model = MAX_SMTI_IP(instance)
+    model.weighted = True
+    matching = model.solve()
+    eq_(len(matching), 3)

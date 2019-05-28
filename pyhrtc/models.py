@@ -33,6 +33,9 @@ class MAX_SMTI_IP(LpProblem):
         self._variables_yl = None
         self._variables_yr = None
 
+        """Should we find a maximum weight matching, or maximum size?"""
+        self._weighted = False
+
     @property
     def dummy_variables(self):
         """Are dummy variables used in this model."""
@@ -46,6 +49,22 @@ class MAX_SMTI_IP(LpProblem):
         if self._built:
             raise Exception("Cannot modify model after it is built")
         self._use_dummy = choice
+
+    @property
+    def weighted(self):
+        """Are we finding a maximum weight matching"""
+        return self._weighted
+
+    @weighted.setter
+    def weighted(self, choice):
+        """Enable (or disable) the search for a maximum weight stable matching.
+        """
+        if self._built:
+            raise Exception("Cannot modify model after it is built")
+        if choice and not isinstance(self._instance, WeightedInstance):
+            raise Exception("Cannot find a maximum weight stable matching if "
+                            "the instance is not weighted")
+        self._weighted = choice
 
     def _make_variables(self):
         """Makes the variables
@@ -157,6 +176,11 @@ class MAX_SMTI_IP(LpProblem):
         objective = []
         for left in self._instance.single_agents_left:
             for right in left.acceptable_agents():
+                if self.weighted:
+                    objective.append(left.weight_of(right) *
+                                     self._variables_lr[left.ident][right])
+                else:
+                    objective.append(self._variables_lr[left.ident][right])
                 objective.append(self._variables_lr[left.ident][right])
         self += lpSum(objective)
 
@@ -169,7 +193,10 @@ class MAX_SMTI_IP(LpProblem):
         self._make_capacity_constraints()
         if self._use_dummy:
             self._make_dummy_stability_constraints()
-            self._make_dummy_objective()
+            if not self.weighted:
+                self._make_dummy_objective()
+            else:
+                self._make_regular_objective()
         else:
             self._make_stability_constraints()
             self._make_regular_objective()
