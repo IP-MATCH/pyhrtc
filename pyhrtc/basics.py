@@ -98,8 +98,8 @@ class Agent():
         :return: The number of preferences removed
         """
         removed = 0
-        while not [agent for agent in agents if agent in self._preferences[-1]]:
-            removed += len(self._preferences.pop(-1))
+        while not [agent for agent in agents if agent in self.preferences[-1]]:
+            removed += len(self.preferences.pop(-1))
         return removed
 
     def position_of(self, other):
@@ -109,7 +109,7 @@ class Agent():
         agents before it.
         """
         count = 0
-        for group in self._preferences:
+        for group in self.preferences:
             for item in group:
                 if item == other.id:
                     return count
@@ -118,12 +118,12 @@ class Agent():
 
     def tie_density(self):
         """Get the tie density according to this agent."""
-        if len(self._prefs) == 1 and len(self._prefs[1]) == 1:
+        if len(self.preferences) == 1 and len(self.preferences[1]) == 1:
             raise NotImplementedError()
         count = 0
-        for pref in self._prefs:
+        for pref in self.preferences:
             count += len(pref) - 1
-        return count / (count + len(self._prefs))
+        return count / (count + len(self.preferences))
 
     def make_random_preferences(self, options, tie_density=0, length=None):
         """Create a random preference list from the list options, with the
@@ -166,7 +166,7 @@ class Agent():
 
     def acceptable_agents(self):
         """An iterator for acceptable agents for this Agent."""
-        for tie in self._preferences:
+        for tie in self.preferences:
             for agent in tie:
                 yield agent
 
@@ -175,7 +175,7 @@ class Agent():
         :param other: an Agent ID
         :return: An iterator of Agent IDs
         """
-        for tie in self._preferences:
+        for tie in self.preferences:
             for agent in tie:
                 yield agent
             if other in tie:
@@ -185,7 +185,7 @@ class Agent():
         """Is the given agent (as identified by their identifier) acceptable
         for this Agent?
         """
-        for tie in self._preferences:
+        for tie in self.preferences:
             if ident in tie:
                 return True
         return False
