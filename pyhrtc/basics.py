@@ -84,10 +84,15 @@ class Agent():
         self._num_preferences = None
 
     def rank_of(self, other):
-        """Find the rank of other according to this agent.
+        """Find the rank of other according to this agent. Note that ranks
+        start at 1, not 0.
         """
-        for index, group in enumerate(self._preferences):
-            if other.id in group:
+        if isinstance(other, Agent):
+            ident = other.ident
+        else:
+            ident = other
+        for index, group in enumerate(self.preferences, start=1):
+            if ident in group:
                 return index
         return -1
 
