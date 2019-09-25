@@ -16,7 +16,7 @@ def max_card_matching(instance):
     :param instance: The instance in question
     :type instance: Instance
     :rtype: int
-    :return: The size of the largest matching.
+    :return: The size of the largest cardinality matching.
     """
     graph = NxGraph()
     if instance.number_of_couples_left() != 0:
@@ -45,8 +45,8 @@ def max_weight_matching(instance):
 
     :param instance: The instance in question
     :type instance: WeightedInstance
-    :rtype: int
-    :return: The size of the largest matching.
+    :rtype: float
+    :return: The weight of the largest weigh tmatching.
     """
     if not isinstance(instance, WeightedInstance):
         raise Exception("Max weight matching needs a WeightedInstance")
