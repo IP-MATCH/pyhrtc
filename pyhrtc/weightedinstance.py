@@ -158,6 +158,15 @@ class WeightedInstance(Instance):
         for ident in to_remove:
             del self._single_agents_right[ident]
 
+    def weight(self, matching):
+        """Get the weight of the given matching.
+        :param matching: a dictionary mapping left_index to right_index such
+        that Agent number left_index on the left is matching with Agent
+        right_index on the right.
+        """
+        return sum(self._single_agents_left[l].weight_of(r)
+                   for l, r in matching.items())
+
     @property
     def agents_left(self):
         """Returns a list of the WeightedAgents on the left side of this SMTI instance.
