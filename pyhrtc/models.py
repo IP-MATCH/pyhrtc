@@ -17,6 +17,7 @@ class MAX_SMTI_IP(LpProblem):
         super().__init__(name, LpMaximize)
         self._instance = instance
         self._built = False
+        self._cardinality_restriction = None
 
         """Map from each variable name (as a string) to the actual variable object.
         _variables_lr is a map such that _variables_lr[left][right] gives the
@@ -65,6 +66,18 @@ class MAX_SMTI_IP(LpProblem):
             raise Exception("Cannot find a maximum weight stable matching if "
                             "the instance is not weighted")
         self._weighted = choice
+
+    @property
+    def cardinality_restriction(self):
+        """Are we looking for a matching of a specific, known size?
+        """
+        return self._cardinality_restriction
+
+    @cardinality_restriction.setter
+    def cardinality_restriction(self, value):
+        """Add a constraint to only search for matchings of the given size.
+        """
+        self._cardinality_restriction = value
 
     def _make_variables(self):
         """Makes the variables
@@ -161,7 +174,17 @@ class MAX_SMTI_IP(LpProblem):
                             for other in right.as_good_as(left.ident))
                 self += 1 - xiq <= xpj, f"{left.ident}.{right.ident}.stability"
 
-    def _make_dummy_objective(self):
+    def _add_dummy_card_constraint(self):
+        """Make a cardinality constraint obased on the dummy variables.
+        """
+        constraint = []
+        for left in self._instance.single_agents_left:
+            max_group = len(left.preferences)
+            constraint.append(self._variables_yl[left.ident][max_group])
+        self += (lpSum(constraint) == self._cardinality_restriction,
+                 f"card-constraint")
+
+    def _make_dummy_card_objective(self):
         """Make an objective based on the xij variables.
         """
         objective = []
@@ -170,7 +193,7 @@ class MAX_SMTI_IP(LpProblem):
             objective.append(self._variables_yl[left.ident][max_group])
         self += lpSum(objective)
 
-    def _make_regular_objective(self):
+    def _make_card_objective(self):
         """Make an objective based on the xij variables.
         """
         objective = []
@@ -194,12 +217,14 @@ class MAX_SMTI_IP(LpProblem):
         if self._use_dummy:
             self._make_dummy_stability_constraints()
             if not self.weighted:
-                self._make_dummy_objective()
+                self._make_dummy_card_objective()
             else:
+                if self._cardinality_restriction is not None:
+                    self._add_dummy_card_constraint()
                 self._make_regular_objective()
         else:
             self._make_stability_constraints()
-            self._make_regular_objective()
+            self._make_card_objective()
         self._built = True
 
     def solve(self):
