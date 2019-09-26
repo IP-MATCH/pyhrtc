@@ -12,8 +12,7 @@ This package can currently
 * find maximum size and maximum weight stable matchings.
 
 ## Status
-[![Build status](https://travis-ci.org/IP-MATCH/pyhrtc.svg?branch=master)](https://travis-ci.org/IP-MATCH/pyhrtc)
-
+[![Build status](https://travis-ci.org/IP-MATCH/pyhrtc.svg?branch=master)](https://travis-ci.org/IP-MATCH/pyhrtc)[![codecov](https://codecov.io/gh/IP-MATCH/pyhrtc/branch/master/graph/badge.svg)](https://codecov.io/gh/IP-MATCH/pyhrtc)
 ## File formats
 
 This package supports a number of file formats. For these, we will talk about
