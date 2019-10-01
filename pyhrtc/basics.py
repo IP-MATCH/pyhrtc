@@ -220,23 +220,23 @@ class Agent():
                 # Tie starting
                 if token[0] == "(" and token[-1] != ")":
                     in_tie = True
-                    current.append(int(token[1:]))
+                    current.append(token[1:])
                 else:
                     # Not at all a tie
                     if token[0] == "(" and token[-1] == ")":
                         token = token[1:-1]
-                    self._preferences.append([int(token)])
+                    self._preferences.append([token])
             else:
                 # Inside a tie
                 if token[-1] == ")":
                     # Tie ends here
-                    current.append(int(token[:-1]))
+                    current.append(token[:-1])
                     self._preferences.append(current)
                     in_tie = False
                     current = []
                 else:
                     # Tie keeps going
-                    current.append(int(token))
+                    current.append(token)
 
 
 class Couple(Agent):
@@ -273,22 +273,22 @@ class Couple(Agent):
                 # Tie starting
                 if token1[0] == "(":
                     in_tie = True
-                    pref = (int(token1[1:]), int(token2))
+                    pref = (token1[1:], token2)
                     current.append(pref)
                 else:
                     # Not at all a tie
-                    self._preferences.append([(int(token1), int(token2))])
+                    self._preferences.append([(token1, token2)])
             else:
                 # Inside a tie
                 if token2[-1] == ")":
                     # Tie ends here
-                    current.append((int(token1), int(token2[:-1])))
+                    current.append((token1, token2[:-1]))
                     self._preferences.append(current)
                     in_tie = False
                     current = []
                 else:
                     # Tie keeps going
-                    current.append((int(token1), int(token2)))
+                    current.append((token1, token2))
 
     def preference_string(self):
         """Returns the string of preferences for this agent."""
@@ -547,13 +547,11 @@ class Instance():
                         if other_agent not in positions:
                           yield other_agent
         if side == 'L':
-            print("looking at doctors")
             these = self.single_agents_left
             other = self.single_agents_right
             these_agent = self.single_agent_left
             other_agent = self.single_agent_right
         else:
-            print("looking at hospitals")
             these = self.single_agents_right
             other = self.single_agents_left
             these_agent = self.single_agent_right

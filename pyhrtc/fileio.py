@@ -54,7 +54,7 @@ def read_hrtc_glasgow_hrtc_nocolon(filename):
         for _ in range(num_hospitals):
             line = infile.readline()
             ident = line.split()[0]
-            cap = line.split()[1]
+            cap = int(line.split()[1])
             hospital = Agent(ident, capacity=cap)
             hospital.read_preferences(line.split()[2:])
             instance.add_agent_right(hospital)
