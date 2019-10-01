@@ -117,8 +117,9 @@ def read_iain_instance(filename):
             doc = Agent(ident)
             doc.read_preferences(line.split()[1:])
             instance.add_agent_left(doc)
+        infile.readline()  # Empty line
         for _ in range(num_hospitals):
-            line = infile.readline()
+            line = infile.readline().rstrip()
             ident = line.split()[0]
             hospital = Agent(ident, capacity=int(line.split()[1]))
             hospital.read_preferences(line.split()[2:])
