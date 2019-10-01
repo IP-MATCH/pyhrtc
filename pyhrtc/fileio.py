@@ -6,6 +6,8 @@ HRT etc.)
 import csv
 import re
 
+from openpyxl import load_workbook
+
 from pyhrtc.basics import Agent, Couple, Instance
 from pyhrtc.weightedinstance import WeightedAgent, WeightedInstance
 
@@ -183,11 +185,48 @@ def read_smti_grp_table(filename):
     return WeightedInstance(lefts, rights)
 
 
+def read_smti_grp_table_xls(filename):
+    """Reads an SMTI-GRP instance from an XLS file. The first row and column are
+    expected to be identifiers.
+    :param filename: The name of the file containing the instance
+    :type filename: string
+    :return: the instance
+    :rtype: WeightedInstance
+    """
+    lefts = {}
+    rights = {}
+    left_ids = {}
+    left_ind = 1
+    workbook = load_workbook(filename, read_only=True)
+    first = True
+    for row in workbook.active:
+        if first:
+            for left_id in row[1:]:
+                left_id = left_id.value
+                lefts[left_id] = WeightedAgent(left_id)
+                left_ids[left_ind] = left_id
+                left_ind += 1
+            first = False
+        else:
+            right_id = row[0].value
+            right = WeightedAgent(right_id)
+            for left_id, cell in enumerate(row):
+                if left_id not in left_ids:
+                    continue
+                left_id = left_ids[left_id]
+                weight = float(cell.value)
+                right.add_weight(left_id, weight)
+                lefts[left_id].add_weight(right.ident, weight)
+            rights[right_id] = right
+    return WeightedInstance(lefts, rights)
+
+
 # Register the instance reader
 INSTANCE_READERS["Glasgow_HRTC_nocolon"] = read_hrtc_glasgow_hrtc_nocolon
 INSTANCE_READERS["Iain"] = read_iain_instance
 INSTANCE_READERS["Glasgow_HRT_extraline"] = read_hrt_glasgow_nocolon
 INSTANCE_READERS["SMTI-GRP Table"] = read_smti_grp_table
+INSTANCE_READERS["SMTI-GRP Table XLS"] = read_smti_grp_table_xls
 INSTANCE_READERS["SMTI-GRP Table no header"] = read_smti_grp_table_no_header
 
 
@@ -253,6 +292,8 @@ def read_hrtc_filetype(filename):
     :param filename: The name of the file to read
     :return: the variant as a string
     """
+    if ".xls" in filename:
+        return "SMTI-GRP Table XLS"
     with open(filename, "r") as infile:
         firstline = infile.readline().rstrip()
         variant = 0
