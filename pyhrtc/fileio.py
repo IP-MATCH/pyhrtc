@@ -38,21 +38,21 @@ def read_hrtc_glasgow_hrtc_nocolon(filename):
         instance = Instance()
         for _ in range(num_single_residents):
             line = infile.readline()
-            ident = int(line.split()[0])
+            ident = line.split()[0]
             doc = Agent(ident)
             doc.read_preferences(line.split()[1:])
             instance.add_agent_left(doc)
         for _ in range(num_couples):
             line = infile.readline()
-            id1 = int(line.split()[0])
-            id2 = int(line.split()[1])
+            id1 = line.split()[0]
+            id2 = line.split()[1]
             couple = Couple(id1, id2)
             couple.read_preferences(line.split()[2:])
             instance.add_couple_left(couple)
         for _ in range(num_hospitals):
             line = infile.readline()
-            ident = int(line.split()[0])
-            cap = int(line.split()[1])
+            ident = line.split()[0]
+            cap = line.split()[1]
             hospital = Agent(ident, capacity=cap)
             hospital.read_preferences(line.split()[2:])
             instance.add_agent_right(hospital)
@@ -71,13 +71,13 @@ def read_hrt_glasgow_nocolon(filename):
         instance = Instance()
         for _ in range(num_doctor):
             line = infile.readline()
-            ident = int(line.split()[0])
+            ident = line.split()[0]
             doctor = Agent(ident)
             doctor.read_preferences(line.split()[1:])
             instance.add_agent_left(doctor)
         for _ in range(num_hospital):
             line = infile.readline()
-            ident = int(line.split()[0])
+            ident = line.split()[0]
             hospital = Agent(ident, capacity=int(line.split()[1]))
             hospital.read_preferences(line.split()[2:])
             instance.add_agent_right(hospital)
@@ -103,21 +103,21 @@ def read_iain_instance(filename):
         for _ in range(num_couples):
             line = infile.readline().rstrip()
             line_b = infile.readline().rstrip()
-            ident = int(line.split()[0])
-            ident2 = int(line_b.split()[0])
+            ident = line.split()[0]
+            ident2 = line_b.split()[0]
             couple = Couple(ident, ident2)
             couple.read_individual_preferences(line.split()[1:],
                                                line_b.split()[1:])
             instance.add_couple_left(couple)
         for _ in range(num_single_residents):
             line = infile.readline()
-            ident = int(line.split()[0])
+            ident = line.split()[0]
             doc = Agent(ident)
             doc.read_preferences(line.split()[1:])
             instance.add_agent_left(doc)
         for _ in range(num_hospitals):
             line = infile.readline()
-            ident = int(line.split()[0])
+            ident = line.split()[0]
             hospital = Agent(ident, capacity=int(line.split()[1]))
             hospital.read_preferences(line.split()[2:])
             instance.add_agent_right(hospital)
@@ -139,19 +139,19 @@ def read_smti_grp_table_no_header(filename):
         int(infile.readline())
         columns = int(infile.readline())
         for left_id in range(1, columns+1):
-            left_id = int(left_id)
+            left_id = str(left_id)
             lefts[left_id] = WeightedAgent(left_id)
         right_id = 0
         for line in infile:
             right_id += 1
-            right = WeightedAgent(right_id)
+            right = WeightedAgent(str(right_id))
             left_id = 0
             for weight in line.split():
                 left_id += 1
                 weight = float(weight)
-                right.add_weight(left_id, weight)
-                lefts[left_id].add_weight(right.ident, weight)
-            rights[right_id] = right
+                right.add_weight(str(left_id), weight)
+                lefts[str(left_id)].add_weight(right.ident, weight)
+            rights[str(right_id)] = right
     return WeightedInstance(lefts, rights)
 
 
@@ -169,15 +169,13 @@ def read_smti_grp_table(filename):
         reader = csv.DictReader(infile)
         topleft_header = reader.fieldnames[0]
         for left_id in reader.fieldnames[1:]:
-            left_id = int(left_id)
             lefts[left_id] = WeightedAgent(left_id)
         for row in reader:
-            right_id = int(row[topleft_header])
+            right_id = row[topleft_header]
             right = WeightedAgent(right_id)
             for left_id, weight in row.items():
                 if left_id == topleft_header:
                     continue
-                left_id = int(left_id)
                 weight = float(weight)
                 right.add_weight(left_id, weight)
                 lefts[left_id].add_weight(right.ident, weight)

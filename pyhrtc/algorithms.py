@@ -22,16 +22,16 @@ def max_card_matching(instance):
     if instance.number_of_couples_left() != 0:
         raise Exception("max card matching does not currently support couples")
     for left in instance.single_agents_left:
-        graph.add_node(f"l%d" % left.ident, bipartite=0)
+        graph.add_node(f"l%s" % left.ident, bipartite=0)
     for right in instance.single_agents_right:
         for cap in range(right.capacity):
-            graph.add_node(f"r%d_%d" % (right.ident, cap), bipartite=1)
+            graph.add_node(f"r%s_%d" % (right.ident, cap), bipartite=1)
     for left in instance.single_agents_left:
         for pref_group in left.preferences:
             for right_id in pref_group:
                 for cap in range(instance.single_agent_right(right_id).capacity):
-                    graph.add_edge(f"l%d" % left.ident,
-                                   f"r%d_%d" % (right_id, cap))
+                    graph.add_edge(f"l%s" % left.ident,
+                                   f"r%s_%d" % (right_id, cap))
     size = 0
     for component in connected_component_subgraphs(graph):
         size += len(maximum_matching(component))
@@ -55,16 +55,16 @@ def max_weight_matching(instance):
         raise Exception("Max weight matching does not "
                         "currently support couples")
     for left in instance.single_agents_left:
-        graph.add_node(f"l%d" % left.ident, bipartite=0)
+        graph.add_node(f"l%s" % left.ident, bipartite=0)
     for right in instance.single_agents_right:
         for cap in range(right.capacity):
-            graph.add_node(f"r%d_%d" % (right.ident, cap), bipartite=1)
+            graph.add_node(f"r%s_%d" % (right.ident, cap), bipartite=1)
     for left in instance.single_agents_left:
         for pref_group in left.preferences:
             for right_id in pref_group:
                 for cap in range(instance.single_agent_right(right_id).capacity):
-                    graph.add_edge(f"l%d" % left.ident,
-                                   f"r%d_%d" % (right_id, cap),
+                    graph.add_edge(f"l%s" % left.ident,
+                                   f"r%s_%d" % (right_id, cap),
                                    weight=left.weight_of(right_id))
     weight = 0
     for component in connected_component_subgraphs(graph):

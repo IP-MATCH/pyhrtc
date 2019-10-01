@@ -25,19 +25,19 @@ def test_reads_smti_grp():
     # With column/row headers
     instance = read_hrtc("tests/testfiles/smti-grp-simple.instance")
     eq_(instance.number_of_single_agents_left(), 3)
-    eq_(instance.single_agent_left(1).weight_of(1), 48)
-    eq_(instance.single_agent_right(2).weight_of(3), 55)
+    eq_(instance.single_agent_left("1").weight_of("1"), 48)
+    eq_(instance.single_agent_right("2").weight_of("3"), 55)
     eq_(instance.number_of_single_agents_right(), 3)
     # Without the header row/column, but a header showing number of rows and
     # columns instead
     instance = read_hrtc("tests/testfiles/smti-grp-noheader.instance")
     eq_(instance.number_of_single_agents_left(), 3)
-    eq_(instance.single_agent_left(1).weight_of(1), 48)
-    eq_(instance.single_agent_right(2).weight_of(3), 55)
+    eq_(instance.single_agent_left("1").weight_of("1"), 48)
+    eq_(instance.single_agent_right("2").weight_of("3"), 55)
     eq_(instance.number_of_single_agents_right(), 3)
     # An unbalanced instance.
     instance = read_hrtc("tests/testfiles/smti-grp-noheader-unbal.instance")
     eq_(instance.number_of_single_agents_left(), 2)
-    eq_(instance.single_agent_left(1).weight_of(1), 48)
-    eq_(instance.single_agent_right(3).weight_of(2), 94)
+    eq_(instance.single_agent_left("1").weight_of("1"), 48)
+    eq_(instance.single_agent_right("3").weight_of("2"), 94)
     eq_(instance.number_of_single_agents_right(), 3)

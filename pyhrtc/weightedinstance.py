@@ -77,7 +77,7 @@ class WeightedAgent(Agent):
         """Returns the string of preferences for this agent."""
         def format_agent(ident):
             """Show an agent as their id and weight."""
-            return "%d (%f)" % (ident, self._weights[ident])
+            return "%s (%f)" % (ident, self._weights[ident])
 
         def format_tie(tie_as_list):
             """Given a set of tied elements, returns a string representing
@@ -121,8 +121,8 @@ class WeightedAgent(Agent):
     def __str__(self):
         """A human readable string representation of this Agent.
         """
-        return (f"WeightedAgent %d with preferences: %s" %
-                (self._ident, self.preference_string()))
+        return (f"WeightedAgent {self._ident} with preferences: "
+                "{self.preference_string()}")
 
 
 class WeightedInstance(Instance):
@@ -187,8 +187,8 @@ class WeightedInstance(Instance):
     def __str__(self):
         """A human readable string representation of this instance.
         """
-        return (f"WeightedInstance with %d single agents on the left, %d "
-                 "couples on the left and %d single agents on the right" %
-                (self.number_of_single_agents_left(),
-                 self.number_of_couples_left(),
-                 self.number_of_single_agents_right()))
+        return (f"WeightedInstance with {self.number_of_single_agents_left()} "
+                "single agents on the left, {self.number_of_couples_left()} "
+                "couples on the left and "
+                "{self.number_of_single_agents_right()} single agents "
+                "on the right")

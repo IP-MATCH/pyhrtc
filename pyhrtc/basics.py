@@ -25,11 +25,11 @@ class Agent():
     def __str__(self):
         """A human readable string representation of this Agent.
         """
-        return (f"Agent %d with preferences: %s" % (self._ident,
-                                                    self.preference_string()))
+        return (f"Agent {self._ident} with preferences: "
+                 "{self.preference_string()}")
 
     def __repr__(self):
-        return f"Agent:%d" % self._ident
+        return f"Agent:%s" % self._ident
 
     @property
     def ident(self):
@@ -307,12 +307,12 @@ class Couple(Agent):
     def __str__(self):
         """A human readable string representation of this Agent.
         """
-        return (f"Agent (%d, %d) with preferences: %s" % (self._first,
+        return (f"Agent (%s, %s) with preferences: %s" % (self._first,
                                                           self._second,
                                                           self.preference_string()))
 
     def __repr__(self):
-        return f"Agent:%d,%d" % (self._first, self._second)
+        return f"Agent:%s,%s" % (self._first, self._second)
 
     @staticmethod
     def from_two_agents(agent1: Agent, agent2: Agent):
@@ -510,7 +510,7 @@ class Instance():
     def __str__(self):
         """A human readable string representation of this instance.
         """
-        return (f"Instance with %d single agents on the left, %d couples on "
+        return ("Instance with %d single agents on the left, %d couples on "
                 "the left and %d single agents on the right" %
                 (self.number_of_single_agents_left(),
                  self.number_of_couples_left(),
