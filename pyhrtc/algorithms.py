@@ -1,13 +1,17 @@
 """Contains some calls to algorithms from 3rd parties.
 """
 
-from networkx import Graph as NxGraph, connected_component_subgraphs
+from networkx import Graph as NxGraph, connected_components
 from networkx.algorithms.bipartite import maximum_matching
 from networkx.algorithms.components import is_connected
 from networkx.algorithms.matching import max_weight_matching as nx_max_weight
 
 from pyhrtc.weightedinstance import WeightedInstance
 
+
+def connected_component_subgraphs(graph):
+    for nodes in connected_components(graph):
+        yield graph.subgraph(nodes)
 
 def max_card_matching(instance):
     """Given an instance, calculate the cardinality of the biggest matching.
