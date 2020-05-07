@@ -1,5 +1,6 @@
 import setuptools
 
 setuptools.setup(
-install_requires=["networkx", "pulp", "openpyxl"]
+    packages=setuptools.find_packages(include=['pyhrtc']),
+    install_requires=["networkx", "pulp", "openpyxl"]
 )
