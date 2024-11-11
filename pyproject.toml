@@ -1,0 +1,48 @@
+[project]
+name = "pyhrtc"
+authors = [
+  { name = "William Pettersson", email = "william@ewpettersson.se" }
+]
+description = "A Python package for dealing with the hospital-residents problem with ties and couples."
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Development Status :: 4 - Beta",
+        "Operating System :: OS Independent",
+]
+license = {file = "LICENSE"}
+keywords = ["hr",  "stable matchings", "hospital-residents problem"]
+dependencies = [
+  "pulp",
+  "openpyxl",
+  "networkx",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = [
+  "pytest",
+  "mypy>=0.800",
+  "black",
+  "pytest-cov",
+]
+
+[project.urls]
+Homepage = "https://gitlab.com/wpettersson/pyhrtc"
+Repository = "https://gitlab.com/wpettersson/pyhrtc"
+Changelog = "https://gitlab.com/wpettersson/pyhrtc/-/blob/main/CHANGELOG.md"
+
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
+
+[tool.setuptools_scm]
+
+[tool.setuptools.packages.find]
+include = ["pyhrtc"]
+
+[tool.setuptools.package-data]
+"kep_solver" = ["py.typed"]

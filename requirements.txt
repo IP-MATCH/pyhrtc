@@ -1,3 +1,0 @@
-networkx>=2.1
-pulp>=1.6
-openpyxl==3.0.0
