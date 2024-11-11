@@ -1,6 +1,6 @@
 """Various IP models for HRTC and variants."""
 
-from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatusOptimal
+from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatusOptimal  # type: ignore
 
 from pyhrtc.weightedinstance import WeightedInstance
 
