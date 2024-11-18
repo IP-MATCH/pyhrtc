@@ -1,7 +1,13 @@
 """Basic elements of HRTC problems."""
 
-
+from enum import Enum
 import random
+
+
+class STABILITY(Enum):
+    MM = "MM"
+    BIS = "BIS"
+    KPR = "KPR"
 
 
 def grouped(things):
@@ -9,6 +15,13 @@ def grouped(things):
     things in the object two at a time.
     """
     return zip(*[iter(things)]*2)
+
+
+
+class PreferencePair(tuple):
+    """A pair of preferences that would appear in the preference list of a couple.
+    """
+    pass
 
 
 class Agent():
@@ -94,7 +107,14 @@ class Agent():
         for index, group in enumerate(self.preferences, start=1):
             if ident in group:
                 return index
-        return -1
+        raise Exception(f"Tried to get rank of {other} according to {self} but failed")
+
+    def prefers(self, one, two):
+        """Does this agent strictly prefer one to two? Note that the order of arguments
+        is very important here.
+
+        """
+        return self.rank_of(one) < self.rank_of(two)
 
     def trim_after_worst(self, agents):
         """Given a set of agents, trim this agents preference list by removing
@@ -239,6 +259,26 @@ class Agent():
                     current.append(token)
 
 
+    def prefers_single(self, agent, ignore=None):
+        # TODO Need matching
+        """Does this agent prefer a given agent.
+        If not None, ignore indicates an agent who should be ignored when considering
+        preferences.
+        """
+        pass
+
+    def prefers_couple(self, couple, two_distinct, strict_both):
+        # TODO Need matching
+        """Does this agent prefer a given couple.
+        If two_distinct is True, then there must be two distinct agents such that this
+        agent prefers both members of the couple to two distinct agents.
+        If strict_both is True, then there must be two distinct agents such that this
+        agent strictly prefers either member of the couple to both of the distinct
+        agents.
+        """
+        pass
+
+
 class Couple(Agent):
     """Two agents together."""
 
@@ -246,6 +286,14 @@ class Couple(Agent):
         super().__init__("(%s,%s)" % (first, second))
         self._first = first
         self._second = second
+
+    @property
+    def first(self):
+        return self._first
+
+    @property
+    def second(self):
+        return self._second
 
     def split_ident(self):
         """Returns a string representation of the two individual agents,
@@ -259,7 +307,7 @@ class Couple(Agent):
         """
         self._preferences = []
         for one, two in zip(tokens_a, tokens_b):
-            self._preferences.append([int(one), int(two)])
+            self._preferences.append(PreferencePair(one, two))
 
     def read_preferences(self, tokens):
         """Read in and assign preferences based on the given string.
@@ -273,22 +321,22 @@ class Couple(Agent):
                 # Tie starting
                 if token1[0] == "(":
                     in_tie = True
-                    pref = (token1[1:], token2)
+                    pref = PreferencePair(token1[1:], token2)
                     current.append(pref)
                 else:
                     # Not at all a tie
-                    self._preferences.append([(token1, token2)])
+                    self._preferences.append([PreferencePair(token1, token2)])
             else:
                 # Inside a tie
                 if token2[-1] == ")":
                     # Tie ends here
-                    current.append((token1, token2[:-1]))
+                    current.append(PreferencePair(token1, token2[:-1]))
                     self._preferences.append(current)
                     in_tie = False
                     current = []
                 else:
                     # Tie keeps going
-                    current.append((token1, token2))
+                    current.append(PreferencePair(token1, token2))
 
     def preference_string(self):
         """Returns the string of preferences for this agent."""
@@ -605,6 +653,101 @@ class Instance():
                     if new_group:
                         new_preferences.append(new_group)
                 agent.preferences = new_preferences
+
+
+class Matching:
+
+    def is_stable(self, instance, stability_type):
+        for left in instance.left_agents():
+            for right in left.acceptable_agents():
+                if isinstance(left, Couple):
+                    if not _is_stable_couple(self, left, right, stability_type):
+                        return False
+                elif isinstance(right, Couple):
+                    raise Exception("Cannot have couples on right in this implementation")
+                else:
+                    if not _is_stable_not_couple(self, left, right):
+                        return False
+        return True
+
+    def matched(self, left):
+        """Given the ID of a left-agent, return the right-agent ID that this left-agent
+        is matched too, or None if they are not matched.
+        If left-agent is a couple, return the PreferencePair corresponding to the
+        matched agents.
+        """
+        # TODO
+        pass
+
+    def _is_stable_not_couple(self, left, right):
+        if self.matched(left) == right:
+            return True
+        if not left.prefers(right):
+            return True
+        if not right.prefers(left):
+            return True
+        return False
+
+    def _is_stable_couple(self, left, right, stability_type):
+        # Note that CH1 is already handled by only considering acceptable pairs for left
+        # These are the acceptable agents of the first and second agent in the couple.
+        first, second = right
+        # This handles CH2 / CHH2
+        if not left.prefers(right):
+            return True
+        if first != second:
+            # We're in the CHH case
+            # The next checks CHH3 and CHH4
+            if not (
+                    self.instance.getAgent(first).prefers(left.first) and
+                    self.instance.getAgent(second).prefers(left.second)
+                    ):
+                return True
+        else:
+            hosp = self.instance.getAgent(first)
+            # CH3.1
+            if self.capacity_available(hosp) >= 2:
+                return False
+            # CH3.2 
+            if self.capacity_available(hosp) == 1 and (self.matched(left.one) == hosp or
+                                                        self.matched(left.two) == hosp):
+                return False
+            # CH3.3
+            if stability_type == STABILITY.MM:
+                # CH3.3'
+                if self.capacity_available(hosp) == 1 and
+                    (hosp.prefers_single(left.one) or hosp.prefers_single(left.two)):
+                    return False
+            else:
+                if self.capacity_available(hosp) == 1 and (hosp.prefers_couple(left, two_distinct=False)):
+                    return False
+            # CH3.4
+            if stability_type == STABILITY.MM:
+                # CH3.4.1'
+                if hosp.prefers_single(left.one, ignore=left.two) and
+                    self.matched(left.two) == hosp:
+                    return False
+                # CH3.4.2'
+                if hosp.prefers_single(left.two, ignore=left.oen) and
+                    self.matched(left.one) == hosp:
+                    return False
+                pass
+            else:
+                if (self.matched(left.first) == hosp or self.matched(left.second) == hosp)
+                    and (hosp.prefers_couple(left, two_distinct=False)):
+                    return False
+            # CH3.5
+            if stability_type == STABILITY.MM:
+                if (hosp.prefers_couple(left, two_distinct=True, strict_both=False):
+                    return False
+            else:
+                if (hosp.prefers_couple(left, two_distinct=True, strict_both=True):
+                    return False
+            if stability_type == STAB.BIS:
+                # CH3.6 
+                if (self.instance.getAgent(first).prefers_couple(left, strict=True, other_couple=True):
+                    return False
+        return False
 
 
 import pyhrtc.fileio
