@@ -6,7 +6,7 @@ HRT etc.)
 import csv
 import re
 
-from openpyxl import load_workbook
+from openpyxl import load_workbook  # type: ignore
 
 from pyhrtc.basics import Agent, Couple, Instance
 from pyhrtc.weightedinstance import WeightedAgent, WeightedInstance

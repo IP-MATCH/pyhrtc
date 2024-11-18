@@ -33,6 +33,15 @@ class WeightedAgent(Agent):
         self._sort_preferences()
         return self._preferences
 
+    @preferences.setter
+    def preferences(self, new):
+        """Set the preferences of this agent. This must be a list of lists,
+        such that each tie group is a list. For instance, 1 (2 3) should be
+        passed in as [["1"], ["2", "3"]].
+        """
+        self._preferences = new
+        self._num_preferences = None
+
     def weight_of(self, other):
         """Return the weight of matching self with the agent "other", or raises
         an exception if this agent is not compatible with other.
