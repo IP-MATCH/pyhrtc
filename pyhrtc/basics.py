@@ -42,7 +42,7 @@ class Agent():
                  "{self.preference_string()}")
 
     def __repr__(self):
-        return f"Agent:%s" % self._ident
+        return f"Agent:{self._ident}"
 
     @property
     def ident(self):
@@ -73,6 +73,12 @@ class Agent():
             self._num_preferences = sum([len(x) for x in self.preferences])
         return self._num_preferences
 
+    def is_empty(self):
+        """Return True if and only if this Agent has no preferences, and
+        therefore can be safely deleted.
+        """
+        return not self.preferences
+
     @property
     def preferences(self):
         """Return the preferences, as a list of tie groups. Entries which are
@@ -80,12 +86,6 @@ class Agent():
         is [[1], [2, 3]]).
         """
         return self._preferences
-
-    def is_empty(self):
-        """Return True if and only if this Agent has no preferences, and
-        therefore can be safely deleted.
-        """
-        return not self.preferences
 
     @preferences.setter
     def preferences(self, new):
@@ -355,12 +355,10 @@ class Couple(Agent):
     def __str__(self):
         """A human readable string representation of this Agent.
         """
-        return (f"Agent (%s, %s) with preferences: %s" % (self._first,
-                                                          self._second,
-                                                          self.preference_string()))
+        return f"{repr(self)} with preferences: {self.preference_string}"
 
     def __repr__(self):
-        return f"Agent:%s,%s" % (self._first, self._second)
+        return f"Agent:{self._first},{self._second}" % (self._first, self._second)
 
     @staticmethod
     def from_two_agents(agent1: Agent, agent2: Agent):
