@@ -1,6 +1,7 @@
 """Basic elements of HRTC problems."""
 
 
+from typing import Callable
 import random
 
 
@@ -336,13 +337,13 @@ class Couple(Agent):
         return couple
 
 
-class Instance():
+class Instance:
     """An instance of HRTC.
     """
 
     """A dict to hold all functions that can write Instances to a file.
     """
-    instance_writers = {}
+    instance_writers: dict[str, Callable[["Instance", str], None]] = {}
 
     @staticmethod
     def add_writer(name, function):
