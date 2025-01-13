@@ -22,10 +22,11 @@ def grouped(things):
 class PreferencePair(tuple):
     """A pair of preferences that would appear in the preference list of a couple.
     """
-    pass
+    def __new__(self, left, right):
+        return tuple.__new__(PreferencePair, (left, right))
 
 
-class Agent():
+class Agent:
     """An agent."""
 
     def __init__(self, ident, capacity=1):
@@ -656,27 +657,44 @@ class Instance:
 
 class Matching:
 
+    def __init__(self, matching: dict[str, str]):
+        self._matching = matching
+        self._left_agents = set(matching.keys())
+        self._right_agents = set(matching.values())
+        self._rev_matching: dict[str, str] | None = None
+
     def is_stable(self, instance, stability_type):
         for left in instance.left_agents():
             for right in left.acceptable_agents():
                 if isinstance(left, Couple):
-                    if not _is_stable_couple(self, left, right, stability_type):
+                    if not self._is_stable_couple(left, right, stability_type):
                         return False
                 elif isinstance(right, Couple):
                     raise Exception("Cannot have couples on right in this implementation")
                 else:
-                    if not _is_stable_not_couple(self, left, right):
+                    if not self._is_stable_not_couple(left, right):
                         return False
         return True
 
-    def matched(self, left):
-        """Given the ID of a left-agent, return the right-agent ID that this left-agent
-        is matched too, or None if they are not matched.
-        If left-agent is a couple, return the PreferencePair corresponding to the
+    @property
+    def rev_matching(self):
+        if not self._rev_matching:
+            self._rev_matching = {value: key for key, value in self._matching.items()}
+        return self._rev_matching
+
+    def matched(self, agent: str | Agent) -> str:
+        """Given the ID of an agent, return the agent  that this agent is
+        matched too, or None if they are not matched.
+        If agent is a couple, return the PreferencePair corresponding to the
         matched agents.
         """
-        # TODO
-        pass
+        if isinstance(agent, Agent):
+            agent_id = agent.id
+        else:
+            agent_id = agent
+        if agent_id in self._left_agents:
+            return self._matching[agent_id]
+        return self.rev_matching[agent_id]
 
     def _is_stable_not_couple(self, left, right):
         if self.matched(left) == right:
@@ -692,8 +710,9 @@ class Matching:
         # These are the acceptable agents of the first and second agent in the couple.
         first, second = right
         # This handles CH2 / CHH2
-        if not left.prefers(right):
-            return True
+        if first == second:
+            if not left.first.prefers(first) and left.second.prefers(first):
+                return True
         if first != second:
             # We're in the CHH case
             # The next checks CHH3 and CHH4
@@ -708,14 +727,12 @@ class Matching:
             if self.capacity_available(hosp) >= 2:
                 return False
             # CH3.2 
-            if self.capacity_available(hosp) == 1 and (self.matched(left.one) == hosp or
-                                                        self.matched(left.two) == hosp):
+            if self.capacity_available(hosp) == 1 and (self.matched(left.one) == hosp or self.matched(left.two) == hosp):
                 return False
             # CH3.3
             if stability_type == STABILITY.MM:
                 # CH3.3'
-                if self.capacity_available(hosp) == 1 and
-                    (hosp.prefers_single(left.one) or hosp.prefers_single(left.two)):
+                if self.capacity_available(hosp) == 1 and (hosp.prefers_single(left.one) or hosp.prefers_single(left.two)):
                     return False
             else:
                 if self.capacity_available(hosp) == 1 and (hosp.prefers_couple(left, two_distinct=False)):
@@ -723,28 +740,25 @@ class Matching:
             # CH3.4
             if stability_type == STABILITY.MM:
                 # CH3.4.1'
-                if hosp.prefers_single(left.one, ignore=left.two) and
-                    self.matched(left.two) == hosp:
+                if hosp.prefers_single(left.one, ignore=left.two) and self.matched(left.two) == hosp:
                     return False
                 # CH3.4.2'
-                if hosp.prefers_single(left.two, ignore=left.oen) and
-                    self.matched(left.one) == hosp:
+                if hosp.prefers_single(left.two, ignore=left.oen) and self.matched(left.one) == hosp:
                     return False
                 pass
             else:
-                if (self.matched(left.first) == hosp or self.matched(left.second) == hosp)
-                    and (hosp.prefers_couple(left, two_distinct=False)):
+                if (self.matched(left.first) == hosp or self.matched(left.second) == hosp) and (hosp.prefers_couple(left, two_distinct=False)):
                     return False
             # CH3.5
             if stability_type == STABILITY.MM:
-                if (hosp.prefers_couple(left, two_distinct=True, strict_both=False):
+                if hosp.prefers_couple(left, two_distinct=True, strict_both=False):
                     return False
             else:
-                if (hosp.prefers_couple(left, two_distinct=True, strict_both=True):
+                if hosp.prefers_couple(left, two_distinct=True, strict_both=True):
                     return False
             if stability_type == STAB.BIS:
-                # CH3.6 
-                if (self.instance.getAgent(first).prefers_couple(left, strict=True, other_couple=True):
+                # CH3.6
+                if self.instance.getAgent(first).prefers_couple(left, strict=True, other_couple=True):
                     return False
         return False
 
