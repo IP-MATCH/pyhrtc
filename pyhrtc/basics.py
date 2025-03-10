@@ -1,8 +1,10 @@
 """Basic elements of HRTC problems."""
+from __future__ import annotations
 
 from enum import Enum
 from typing import Callable
 import random
+
 
 
 class STABILITY(Enum):
@@ -29,25 +31,25 @@ class PreferencePair(tuple):
 class Agent:
     """An agent."""
 
-    def __init__(self, ident, capacity=1):
+    def __init__(self, ident: str, capacity: int=1):
         self._ident = ident
         self._capacity = capacity
         # This will be a list of lists, with each inner list corresponding to a
         # tie group
-        self._preferences = []
-        self._num_preferences = None
+        self._preferences: list[list[str]] = []
+        self._num_preferences: int | None = None
 
     def __str__(self):
         """A human readable string representation of this Agent.
         """
         return (f"Agent {self._ident} with preferences: "
-                 "{self.preference_string()}")
+                f"{self.preference_string()}")
 
     def __repr__(self):
         return f"Agent:{self._ident}"
 
     @property
-    def ident(self):
+    def ident(self) -> str:
         """The ID of this agent."""
         return self._ident
 
@@ -57,7 +59,7 @@ class Agent:
         raise NotImplementedError
 
     @property
-    def capacity(self):
+    def capacity(self) -> int:
         """How many other agents can this agent can support."""
         return self._capacity
 
@@ -67,7 +69,7 @@ class Agent:
         raise NotImplementedError
 
     @property
-    def num_preferences(self):
+    def num_preferences(self) -> int:
         """The number of preferences of this agent, aka the length of its
         preference list.
         """
@@ -75,17 +77,17 @@ class Agent:
             self._num_preferences = sum([len(x) for x in self.preferences])
         return self._num_preferences
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """Return True if and only if this Agent has no preferences, and
         therefore can be safely deleted.
         """
         return not self.preferences
 
     @property
-    def preferences(self):
+    def preferences(self) -> list[list[str]]:
         """Return the preferences, as a list of tie groups. Entries which are
         not in a tie at all still appear by themselvs in a list (i.e. 1 (2 3)
-        is [[1], [2, 3]]).
+        is [["1"], ["2", "3"]]).
         """
         return self._preferences
 
@@ -93,12 +95,12 @@ class Agent:
     def preferences(self, new):
         """Set the preferences of this agent. This must be a list of lists,
         such that each tie group is a list. For instance, 1 (2 3) should be
-        passed in as [[1], [2, 3]].
+        passed in as [["1"], ["2", "3"]].
         """
         self._preferences = new
         self._num_preferences = None
 
-    def rank_of(self, other):
+    def rank_of(self, other: str | "Agent") -> int:
         """Find the rank of other according to this agent. Note that ranks
         start at 1, not 0.
         """
@@ -111,14 +113,14 @@ class Agent:
                 return index
         raise Exception(f"Tried to get rank of {other} according to {self} but failed")
 
-    def prefers(self, one, two):
+    def prefers(self, one: Agent | str, two: Agent | str):
         """Does this agent strictly prefer one to two? Note that the order of arguments
         is very important here.
 
         """
         return self.rank_of(one) < self.rank_of(two)
 
-    def trim_after_worst(self, agents):
+    def trim_after_worst(self, agents: list[Agent]):
         """Given a set of agents, trim this agents preference list by removing
         anything that occurs after the worst agent in agents.
         :param agents: An Iterable containing agent IDs
@@ -129,7 +131,7 @@ class Agent:
             removed += len(self.preferences.pop(-1))
         return removed
 
-    def position_of(self, other):
+    def position_of(self, other: Agent) -> int:
         """Find the position of other in this preference list. Note that this
         is not the same as rank, this function assumes an ordering on the
         elements within a tie, and gives an absolute count on the number of
@@ -143,7 +145,7 @@ class Agent:
                 count += 1
         return -1
 
-    def tie_density(self):
+    def tie_density(self) -> float:
         """Get the tie density according to this agent."""
         if len(self.preferences) == 1 and len(self.preferences[1]) == 1:
             raise NotImplementedError()
@@ -208,7 +210,7 @@ class Agent:
             if other in tie:
                 break
 
-    def is_acceptable(self, ident):
+    def is_acceptable(self, ident: str) -> bool:
         """Is the given agent (as identified by their identifier) acceptable
         for this Agent?
         """
@@ -217,7 +219,7 @@ class Agent:
                 return True
         return False
 
-    def preference_string(self):
+    def preference_string(self) -> str:
         """Returns the string of preferences for this agent."""
         def format_tie(tie_as_list):
             """Given a set of tied elements, returns a string representing
@@ -261,7 +263,7 @@ class Agent:
                     current.append(token)
 
 
-    def prefers_single(self, agent, ignore=None):
+    def prefers_single(self, agent, ignore=None) ->  bool:
         # TODO Need matching
         """Does this agent prefer a given agent.
         If not None, ignore indicates an agent who should be ignored when considering
@@ -269,7 +271,7 @@ class Agent:
         """
         pass
 
-    def prefers_couple(self, couple, two_distinct, strict_both):
+    def prefers_couple(self, couple, two_distinct, strict_both) -> bool:
         # TODO Need matching
         """Does this agent prefer a given couple.
         If two_distinct is True, then there must be two distinct agents such that this
@@ -284,20 +286,20 @@ class Agent:
 class Couple(Agent):
     """Two agents together."""
 
-    def __init__(self, first, second):
+    def __init__(self, first: Agent, second: Agent):
         super().__init__("(%s,%s)" % (first, second))
-        self._first = first
-        self._second = second
+        self._first: Agent = first
+        self._second: Agent = second
 
     @property
-    def first(self):
+    def first(self) -> Agent:
         return self._first
 
     @property
-    def second(self):
+    def second(self) -> Agent:
         return self._second
 
-    def split_ident(self):
+    def split_ident(self) -> str:
         """Returns a string representation of the two individual agents,
         rather than the combined couple.
         """
@@ -318,6 +320,7 @@ class Couple(Agent):
         self._preferences = []
         in_tie = False
         current = []
+        # TODO work out how to split tokens for preference string??
         for token1, token2 in grouped(tokens):
             if not in_tie:
                 # Tie starting
@@ -339,6 +342,7 @@ class Couple(Agent):
                 else:
                     # Tie keeps going
                     current.append(PreferencePair(token1, token2))
+        self._preferences.append(current)
 
     def preference_string(self):
         """Returns the string of preferences for this agent."""
@@ -357,10 +361,10 @@ class Couple(Agent):
     def __str__(self):
         """A human readable string representation of this Agent.
         """
-        return f"{repr(self)} with preferences: {self.preference_string}"
+        return f"Couple {self._first.ident}, {self._second.ident} with preferences: {self.preference_string()}"
 
     def __repr__(self):
-        return f"Agent:{self._first},{self._second}" % (self._first, self._second)
+        return f"Agent:{self._first},{self._second}"
 
     @staticmethod
     def from_two_agents(agent1: Agent, agent2: Agent):
@@ -468,6 +472,9 @@ class Instance:
         """Not allowed."""
         raise NotImplementedError
 
+    def left_agents(self) -> list[Agent | Couple]:
+        return list(self._single_agents_left.values()) + list(self._couples_left.values())
+
     @property
     def single_agents_right(self):
         """Returns a list of all the single agents on the right."""
@@ -477,6 +484,17 @@ class Instance:
     def single_agents_right(self, new):
         """Not allowed."""
         raise NotImplementedError
+
+    def agent_left(self, ident: str) -> Agent:
+        """Return either the single agent or the couple on the left by their ID.
+
+        :param ident: The identifier for the requested agent.
+        :return: The agent in question.
+        """
+        try:
+            return self.single_agent_left(ident)
+        except KeyError:
+            return self._couples_left[ident]
 
     def single_agent_left(self, ident):
         """Returns the agent on the left identified by ident.
@@ -665,7 +683,9 @@ class Matching:
 
     def is_stable(self, instance, stability_type):
         for left in instance.left_agents():
-            for right in left.acceptable_agents():
+            for right_ident in left.acceptable_agents():
+                print(right_ident)
+                right = instance.single_agent_right(right_ident)
                 if isinstance(left, Couple):
                     if not self._is_stable_couple(left, right, stability_type):
                         return False
@@ -689,19 +709,19 @@ class Matching:
         matched agents.
         """
         if isinstance(agent, Agent):
-            agent_id = agent.id
+            agent_ident = agent.ident
         else:
-            agent_id = agent
-        if agent_id in self._left_agents:
-            return self._matching[agent_id]
-        return self.rev_matching[agent_id]
+            agent_ident = agent
+        if agent_ident in self._left_agents:
+            return self._matching[agent_ident]
+        return self.rev_matching[agent_ident]
 
     def _is_stable_not_couple(self, left, right):
         if self.matched(left) == right:
             return True
-        if not left.prefers(right):
+        if not left.prefers(right, self.matched(left)):
             return True
-        if not right.prefers(left):
+        if not right.prefers(left, self.matched(right)):
             return True
         return False
 

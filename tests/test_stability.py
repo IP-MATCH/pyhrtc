@@ -49,16 +49,18 @@ def test_stable_couples():
         a = Agent(ident_a)
         b = Agent(ident_b)
         c = Couple(a, b)
-        c.read_preferences([("H1", "H1"), ("H1", "N"), ("N", "H1")])
+        c.read_preferences(pref_str)
+        print(c)
+        return c
     left = [
-            mk_couple("A", [["a"], ["b"], ["c"]]),
+            mk_pair("1a", "1b", [[("a", "a")], [("a", "b")], [("b", "c")]]),
             mk_agent("2", [["a"], ["b"], ["c"]]),
             mk_agent("3", [["a"], ["b"], ["c"]]),
     ]
     right = [
-            mk_agent("a", [["1"], ["2"], ["3"]]),
-            mk_agent("b", [["1"], ["2"], ["3"]]),
-            mk_agent("c", [["1"], ["2"], ["3"]]),
+            mk_agent("a", [["1a", "1b"], ["2"], ["3"]]),
+            mk_agent("b", [["1b"], ["1a", "2"], ["3"]]),
+            mk_agent("c", [["1a"], ["2"], ["1b", "3"]]),
     ]
     m = {
             "1": "a",
