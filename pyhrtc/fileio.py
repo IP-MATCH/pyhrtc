@@ -2,7 +2,6 @@
 HRT etc.)
 """
 
-
 import csv
 import re
 
@@ -11,15 +10,16 @@ from openpyxl import load_workbook  # type: ignore
 from pyhrtc.basics import Agent, Couple, Instance
 from pyhrtc.weightedinstance import WeightedAgent, WeightedInstance
 
-JUST_NUMBER_RE = re.compile(r'^\d+$')
+JUST_NUMBER_RE = re.compile(r"^\d+$")
 
 
 class UnknownFormatException(Exception):
     """An unknown format for the instance file."""
 
     def __init__(self):
-        super().__init__("pyhrtc either does not support or "
-                         "cannot read this file format.")
+        super().__init__(
+            "pyhrtc either does not support or " "cannot read this file format."
+        )
 
 
 INSTANCE_READERS = {}
@@ -87,13 +87,12 @@ def read_hrt_glasgow_nocolon(filename):
 
 
 def read_iain_instance(filename):
-    """Reads in an instance of HRTC from filename in Iain's format.
-    """
+    """Reads in an instance of HRTC from filename in Iain's format."""
     with open(filename, "r") as infile:
         total_num_residents = int(infile.readline().rstrip())
         num_hospitals = int(infile.readline().rstrip())
         num_couples = int(infile.readline().rstrip())
-        num_single_residents = total_num_residents - 2*num_couples
+        num_single_residents = total_num_residents - 2 * num_couples
         infile.readline()  # number jobs
         infile.readline()  # min pref list
         infile.readline()  # max pref list
@@ -108,8 +107,7 @@ def read_iain_instance(filename):
             ident = line.split()[0]
             ident2 = line_b.split()[0]
             couple = Couple(ident, ident2)
-            couple.read_individual_preferences(line.split()[1:],
-                                               line_b.split()[1:])
+            couple.read_individual_preferences(line.split()[1:], line_b.split()[1:])
             instance.add_couple_left(couple)
         for _ in range(num_single_residents):
             line = infile.readline()
@@ -141,7 +139,7 @@ def read_smti_grp_table_no_header(filename):
     with open(filename, "r") as infile:
         int(infile.readline())
         columns = int(infile.readline())
-        for left_id in range(1, columns+1):
+        for left_id in range(1, columns + 1):
             left_id = str(left_id)
             lefts[left_id] = WeightedAgent(left_id)
         right_id = 0
@@ -232,14 +230,12 @@ INSTANCE_READERS["SMTI-GRP Table no header"] = read_smti_grp_table_no_header
 
 
 def write_hrtc_glasgow_hrtc_nocolon(instance, filename):
-    """Writes an Instance to a file in the Glasgow HRTC, without colons.
-    """
+    """Writes an Instance to a file in the Glasgow HRTC, without colons."""
     write_hrtc_glasgow_hrtc(instance, filename, False)
 
 
 def write_hrtc_glasgow_hrtc_colon(instance, filename):
-    """Writes an Instance to a file in the Glasgow HRTC, with colons.
-    """
+    """Writes an Instance to a file in the Glasgow HRTC, with colons."""
     write_hrtc_glasgow_hrtc(instance, filename, True)
 
 
@@ -256,20 +252,20 @@ def write_hrtc_glasgow_hrtc(instance, filename, colon):
         outfile.write("%d\n" % instance.number_of_couples_left())
         outfile.write("%d\n" % instance.number_of_single_agents_right())
         for agent in instance.single_agents_left:
-            outfile.write("%s%s %s\n" % (agent.ident, colon,
-                                         agent.preference_string()))
+            outfile.write("%s%s %s\n" % (agent.ident, colon, agent.preference_string()))
         for couple in instance.couples_left:
-            outfile.write("%s%s %s\n" % (couple.split_ident(), colon,
-                                         couple.preference_string()))
+            outfile.write(
+                "%s%s %s\n" % (couple.split_ident(), colon, couple.preference_string())
+            )
         for agent in instance.single_agents_right:
-            outfile.write("%s%s %d%s %s\n" % (agent.ident, colon,
-                                              agent.capacity, colon,
-                                              agent.preference_string()))
+            outfile.write(
+                "%s%s %d%s %s\n"
+                % (agent.ident, colon, agent.capacity, colon, agent.preference_string())
+            )
 
 
 def write_hrtc_edin_hrtc(instance, filename):
-    """Writes an Instance to a file in the Edinburgh? HRTC format
-    """
+    """Writes an Instance to a file in the Edinburgh? HRTC format"""
     with open(filename, "w") as outfile:
         outfile.write("0\n")
         outfile.write("%d\n" % instance.number_of_single_agents_left())
@@ -277,8 +273,9 @@ def write_hrtc_edin_hrtc(instance, filename):
         for agent in instance.single_agents_left:
             outfile.write("%s %s\n" % (agent.ident, agent.preference_string()))
         for agent in instance.single_agents_right:
-            outfile.write("%s %d %s\n" % (agent.ident, agent.capacity,
-                                          agent.preference_string()))
+            outfile.write(
+                "%s %d %s\n" % (agent.ident, agent.capacity, agent.preference_string())
+            )
 
 
 Instance.add_writer("Glasgow_HRTC_nocolon", write_hrtc_glasgow_hrtc_nocolon)

@@ -1,4 +1,5 @@
 """Basic elements of HRTC problems."""
+
 from __future__ import annotations
 
 
@@ -11,6 +12,7 @@ import random
 
 logger = logging.getLogger(__name__)
 
+
 class STABILITY(Enum):
     MM = "MM"
     BIS = "BIS"
@@ -21,13 +23,12 @@ def grouped(things):
     """Given some iterable object, returns an iterator that goes through the
     things in the object two at a time.
     """
-    return zip(*[iter(things)]*2)
-
+    return zip(*[iter(things)] * 2)
 
 
 class PreferencePair(tuple):
-    """A pair of preferences that would appear in the preference list of a couple.
-    """
+    """A pair of preferences that would appear in the preference list of a couple."""
+
     def __new__(self, left, right):
         return tuple.__new__(PreferencePair, (left, right))
 
@@ -45,7 +46,7 @@ class PreferencePair(tuple):
 class Agent:
     """An agent."""
 
-    def __init__(self, ident: str, capacity: int=1):
+    def __init__(self, ident: str, capacity: int = 1):
         self._ident = ident
         self._capacity = capacity
         self._couple: Couple | None = None
@@ -55,10 +56,8 @@ class Agent:
         self._num_preferences: int | None = None
 
     def __repr__(self):
-        """A human readable string representation of this Agent.
-        """
-        return (f"Agent {self._ident} with preferences: "
-                f"{self.preference_string()}")
+        """A human readable string representation of this Agent."""
+        return f"Agent {self._ident} with preferences: " f"{self.preference_string()}"
 
     def __str__(self):
         return f"Agent:{self._ident}"
@@ -139,8 +138,12 @@ class Agent:
                 return index
         raise Exception(f"Tried to get rank of {other} according to {self} but failed")
 
-    def prefers(self, one: Agent | PreferencePair | str, two: Agent | PreferencePair | str,
-                allow_equal: bool = False) -> bool:
+    def prefers(
+        self,
+        one: Agent | PreferencePair | str,
+        two: Agent | PreferencePair | str,
+        allow_equal: bool = False,
+    ) -> bool:
         """Does this agent strictly prefer one to two? Note that the order of arguments
         is very important here.
 
@@ -253,6 +256,7 @@ class Agent:
 
     def preference_string(self) -> str:
         """Returns the string of preferences for this agent."""
+
         def format_tie(tie_as_list):
             """Given a set of tied elements, returns a string representing
             them, by surrounding with brackets if there is more than one item.
@@ -262,11 +266,11 @@ class Agent:
             if len(tie_as_list) == 1:
                 return "%s" % tie_as_list[0]
             return "(%s)" % (" ".join(map(str, tie_as_list)))
+
         return " ".join([format_tie(tie) for tie in self.preferences])
 
     def read_preferences(self, tokens):
-        """Read in and assign preferences based on the given string.
-        """
+        """Read in and assign preferences based on the given string."""
         # First reset preferences
         self._preferences = []
         in_tie = False
@@ -294,23 +298,41 @@ class Agent:
                     # Tie keeps going
                     current.append(token)
 
-
-    def prefers_to_matched(self, instance: Instance, matching: Matching, agent: Agent | PreferencePair | str, ignore: str | None = None) ->  bool:
+    def prefers_to_matched(
+        self,
+        instance: Instance,
+        matching: Matching,
+        agent: Agent | PreferencePair | str,
+        ignore: str | None = None,
+    ) -> bool:
         """Does this agent prefer the given agent or preference pair to any
         they are currently matched to. If not None, ignore indicates an agent
         who should be ignored when considering preferences.
         """
         matches = matching.matched(self)
-        logging.debug(f"Checking if {repr(self)} prefers {agent} to matched {matches} with {ignore=}")
+        logging.debug(
+            f"Checking if {repr(self)} prefers {agent} to matched {matches} with {ignore=}"
+        )
         if len(matches) == 0:
             return True
         for matched in matches:
             if self.prefers(agent, matched) and matched != ignore:
                 logging.debug(f"{repr(self)} prefers {agent} to {matched}")
-        return any(self.prefers(agent, matched) for matched in matching.matched(self)
-                   if matched != ignore)
+        return any(
+            self.prefers(agent, matched)
+            for matched in matching.matched(self)
+            if matched != ignore
+        )
 
-    def prefers_couple_to_matched(self, instance: Instance, matching: Matching, couple: Couple, both_beat_both: bool, strict: bool, just_one: bool = False) ->  bool:
+    def prefers_couple_to_matched(
+        self,
+        instance: Instance,
+        matching: Matching,
+        couple: Couple,
+        both_beat_both: bool,
+        strict: bool,
+        just_one: bool = False,
+    ) -> bool:
         """Does this agent prefer the given Couple to agents they are
         currently matched to.
 
@@ -325,7 +347,9 @@ class Agent:
                 for two in matching.matched(self):
                     if one == two:
                         continue
-                    if self.prefers(couple.first, one, allow_equal=not strict) and self.prefers(couple.second, two, allow_equal=not strict):
+                    if self.prefers(
+                        couple.first, one, allow_equal=not strict
+                    ) and self.prefers(couple.second, two, allow_equal=not strict):
                         return True
         else:
             # How many agents do we need the couple to beat
@@ -334,9 +358,15 @@ class Agent:
                 needed = 1
             # Need at least two agents such that the agent would prefer either
             # member of the couple to either of the two about to be rejected
-            return sum(1
-                       for matched in matching.matched(self)
-                       if self.prefers(couple.first, matched, allow_equal=not strict) and self.prefers(couple.second, matched, allow_equal=not strict)) >= needed
+            return (
+                sum(
+                    1
+                    for matched in matching.matched(self)
+                    if self.prefers(couple.first, matched, allow_equal=not strict)
+                    and self.prefers(couple.second, matched, allow_equal=not strict)
+                )
+                >= needed
+            )
         return False
 
 
@@ -408,8 +438,7 @@ class Couple(Agent):
         self._preferences.append(current)
 
     def __str__(self):
-        """A human readable string representation of this Agent.
-        """
+        """A human readable string representation of this Agent."""
         return f"Couple {self._first.ident}, {self._second.ident} with preferences: {self.preference_string()}"
 
     def __repr__(self):
@@ -417,8 +446,7 @@ class Couple(Agent):
 
     @staticmethod
     def from_two_agents(agent1: Agent, agent2: Agent):
-        """Given two agents, create a Couple from them.
-        """
+        """Given two agents, create a Couple from them."""
         couple = Couple(agent1, agent2)
         new_preferences: list[list[str]] = []
         for second_ind, second_pref in enumerate(agent2.preferences):
@@ -426,22 +454,26 @@ class Couple(Agent):
                 if second_ind < first_ind:
                     continue
                 if len(first_pref) != 1 or len(second_pref) != 1:
-                    raise NotImplementedError("pyhrtc can't interleave "
-                                              "from agents with ties")
+                    raise NotImplementedError(
+                        "pyhrtc can't interleave " "from agents with ties"
+                    )
                 if first_ind == second_ind:
                     new_preferences.append([f"{first_pref[0]}|{second_pref[0]}"])
                 else:
                     first_alt = agent1.preferences[second_ind]
                     second_alt = agent2.preferences[first_ind]
-                    new_preferences.append([f"{first_pref[0]}|{second_pref[0]}",
-                                            f"{first_alt[0]}|{second_alt[0]}"])
+                    new_preferences.append(
+                        [
+                            f"{first_pref[0]}|{second_pref[0]}",
+                            f"{first_alt[0]}|{second_alt[0]}",
+                        ]
+                    )
         couple.preferences = new_preferences
         return couple
 
 
 class Instance:
-    """An instance of HRTC.
-    """
+    """An instance of HRTC."""
 
     """A dict to hold all functions that can write Instances to a file.
     """
@@ -459,8 +491,9 @@ class Instance:
         """
         Instance.instance_writers[name] = function
 
-    def __init__(self, single_agents_left=None, couples_left=None,
-                 single_agents_right=None):
+    def __init__(
+        self, single_agents_left=None, couples_left=None, single_agents_right=None
+    ):
         """Create an Instance. Note that if any of the parameters are passed
         in, they are used as is (i.e. not copied) so don't modify the dicts
         after creating an instance. We use "left" and "right" to refer to the
@@ -522,7 +555,9 @@ class Instance:
         raise NotImplementedError
 
     def left_agents(self) -> list[Agent | Couple]:
-        return list(self._single_agents_left.values()) + list(self._couples_left.values())
+        return list(self._single_agents_left.values()) + list(
+            self._couples_left.values()
+        )
 
     @property
     def single_agents_right(self):
@@ -560,18 +595,15 @@ class Instance:
         return self._single_agents_right[ident]
 
     def add_agent_left(self, agent):
-        """Add a single agent to the left side of this instance.
-        """
+        """Add a single agent to the left side of this instance."""
         self._single_agents_left[agent.ident] = agent
 
     def add_couple_left(self, couple: Couple):
-        """Adds a couple to the left side of this instance.
-        """
+        """Adds a couple to the left side of this instance."""
         self._couples_left[couple.ident] = couple
 
     def add_agent_right(self, agent):
-        """Adds an agent to the right side of this instance.
-        """
+        """Adds an agent to the right side of this instance."""
         self._single_agents_right[agent.ident] = agent
 
     def couple_from_agent(self, agent: Agent | str) -> Couple | None:
@@ -620,27 +652,32 @@ class Instance:
         if variant in Instance.instance_writers:
             Instance.instance_writers[variant](self, filename)
         else:
-            raise Exception("pyhrtc either does not support or "
-                            "cannot read this file format.")
+            raise Exception(
+                "pyhrtc either does not support or " "cannot read this file format."
+            )
 
     def long_string(self):
-        """Write a long human-readable description of this instance.
-        """
-        return ("\n".join([str(agent) for agent in self.single_agents_left]) +
-                "\n" +
-                "\n".join([str(agent) for agent in self.single_agents_right]) +
-                "\n")
+        """Write a long human-readable description of this instance."""
+        return (
+            "\n".join([str(agent) for agent in self.single_agents_left])
+            + "\n"
+            + "\n".join([str(agent) for agent in self.single_agents_right])
+            + "\n"
+        )
 
     def __str__(self):
-        """A human readable string representation of this instance.
-        """
-        return ("Instance with %d single agents on the left, %d couples on "
-                "the left and %d single agents on the right" %
-                (self.number_of_single_agents_left(),
-                 self.number_of_couples_left(),
-                 self.number_of_single_agents_right()))
+        """A human readable string representation of this instance."""
+        return (
+            "Instance with %d single agents on the left, %d couples on "
+            "the left and %d single agents on the right"
+            % (
+                self.number_of_single_agents_left(),
+                self.number_of_couples_left(),
+                self.number_of_single_agents_right(),
+            )
+        )
 
-    def preprocess(self, side='L', order=None):
+    def preprocess(self, side="L", order=None):
         """Preprocess this instance, removing any pairs which will definitely
         not be part of a stable matching.
         For each agent l on the Left, we build up a set O containing elements
@@ -665,12 +702,14 @@ class Instance:
         """
         removed = 0
         if order is None:
+
             def order(agent, instance, positions, candidates, side):
                 for group in agent.preferences:
                     for other_agent in group:
                         if other_agent not in positions:
-                          yield other_agent
-        if side == 'L':
+                            yield other_agent
+
+        if side == "L":
             these = self.single_agents_left
             other = self.single_agents_right
             these_agent = self.single_agent_left
@@ -693,8 +732,9 @@ class Instance:
                         candidates.add(agent)
                     if single.ident in group:
                         break
-                if (sum([other_agent(pos).capacity for pos in positions]) >=
-                    sum([these_agent(cand).capacity for cand in candidates])):
+                if sum([other_agent(pos).capacity for pos in positions]) >= sum(
+                    [these_agent(cand).capacity for cand in candidates]
+                ):
                     removed += single.trim_after_worst(positions)
                     self.clean_one(single, other)
         return removed
@@ -719,13 +759,18 @@ class Instance:
         """Clean this instance, removing from preference lists any incompatible
         agents.
         """
-        for queue, other_queue in [(self.single_agents_left, self.single_agent_right),
-                                   (self.single_agents_right, self.single_agent_left)]:
+        for queue, other_queue in [
+            (self.single_agents_left, self.single_agent_right),
+            (self.single_agents_right, self.single_agent_left),
+        ]:
             for agent in queue:
                 new_preferences = []
                 for group in agent.preferences:
-                    new_group = [other for other in group
-                                if other_queue(other).is_acceptable(agent.ident)]
+                    new_group = [
+                        other
+                        for other in group
+                        if other_queue(other).is_acceptable(agent.ident)
+                    ]
                     if new_group:
                         new_preferences.append(new_group)
                 agent.preferences = new_preferences
@@ -739,12 +784,10 @@ class Matching:
         lefts = set(pair[0] for pair in matching)
         rights = set(pair[1] for pair in matching)
         self._matches_from_left = {
-            l: [pair[1] for pair in matching if pair[0] == l]
-            for l in lefts
+            l: [pair[1] for pair in matching if pair[0] == l] for l in lefts
         }
         self._matches_from_right = {
-            r: [pair[0] for pair in matching if pair[1] == r]
-            for r in rights
+            r: [pair[0] for pair in matching if pair[1] == r] for r in rights
         }
 
     def matches_from_left(self, agent: str) -> list[str]:
@@ -797,7 +840,9 @@ class Matching:
         matched agents.
         """
         if isinstance(agent, Couple):
-            return [f"{self.matches_from_left(agent.first.ident)[0]},{self.matches_from_left(agent.second.ident)[0]}"]
+            return [
+                f"{self.matches_from_left(agent.first.ident)[0]},{self.matches_from_left(agent.second.ident)[0]}"
+            ]
         if isinstance(agent, Agent):
             agent_ident = agent.ident
         else:
@@ -815,11 +860,15 @@ class Matching:
             return True
         return False
 
-    def _is_stable_couple(self, left: Couple, right: PreferencePair, stability_type) -> bool:
+    def _is_stable_couple(
+        self, left: Couple, right: PreferencePair, stability_type
+    ) -> bool:
         # Note that CH1 is already handled by only considering acceptable pairs for left
         # This handles CH2 and CHH2
         logger.debug(f"Checking stability of {left=} and {right=}")
-        if (self.matched(left.first) and self.matched(left.second)) and not left.prefers_to_matched(self._instance, self, right):
+        if (
+            self.matched(left.first) and self.matched(left.second)
+        ) and not left.prefers_to_matched(self._instance, self, right):
             logger.debug("Not satisfying CH2/CHH2, not blocking pair")
             return True
         logger.debug("Satisfies CH2/CHH2")
@@ -830,18 +879,18 @@ class Matching:
             # We're in the CHH case
             # CHH3
             if not (
-                    self.capacity_available(right[0]) >= 1 or
-                    right[0] in self.matches_from_left(left.first.ident) or
-                    hosps[0].prefers_to_matched(self._instance, self, left.first)
-                    ):
+                self.capacity_available(right[0]) >= 1
+                or right[0] in self.matches_from_left(left.first.ident)
+                or hosps[0].prefers_to_matched(self._instance, self, left.first)
+            ):
                 logger.debug("Not satisfying CHH3, not blocking pair")
                 return True
             # CHH4
             if not (
-                    self.capacity_available(right[1]) >= 1 or
-                    right[1] in self.matches_from_left(left.second.ident) or
-                    hosps[1].prefers_to_matched(self._instance, self, left.second)
-                    ):
+                self.capacity_available(right[1]) >= 1
+                or right[1] in self.matches_from_left(left.second.ident)
+                or hosps[1].prefers_to_matched(self._instance, self, left.second)
+            ):
                 logger.debug("Not satisfying CHH4, not blocking pair")
                 return True
         else:
@@ -854,41 +903,70 @@ class Matching:
                 logger.debug("Satisfies CH3.1")
                 ch3 = True
             # CH3.2
-            if self.capacity_available(hosps[0]) == 1 and (hosps[0].ident in self.matched(left.first) or hosps[0].ident in self.matched(left.second)):
+            if self.capacity_available(hosps[0]) == 1 and (
+                hosps[0].ident in self.matched(left.first)
+                or hosps[0].ident in self.matched(left.second)
+            ):
                 logger.debug("Satisfies CH3.2")
                 ch3 = True
             # CH3.3
             if stability_type == STABILITY.MM:
                 # CH3.3'
-                if self.capacity_available(hosps[0]) == 1 and (hosps[0].prefers_to_matched(self._instance, self, left.first) or hosps[0].prefers_to_matched(self._instance, self, left.second)):
+                if self.capacity_available(hosps[0]) == 1 and (
+                    hosps[0].prefers_to_matched(self._instance, self, left.first)
+                    or hosps[0].prefers_to_matched(self._instance, self, left.second)
+                ):
                     logger.debug("Satisfies CH3.3'")
                     ch3 = True
             else:
-                if self.capacity_available(hosps[0]) == 1 and (hosps[0].prefers_to_matched(self._instance, self, left.first) and hosps[0].prefers_to_matched(self._instance, self, left.second)):
+                if self.capacity_available(hosps[0]) == 1 and (
+                    hosps[0].prefers_to_matched(self._instance, self, left.first)
+                    and hosps[0].prefers_to_matched(self._instance, self, left.second)
+                ):
                     logger.debug("Satisfies CH3.3")
                     ch3 = True
             # CH3.4
             if stability_type == STABILITY.MM:
                 # CH3.4.1'
-                if hosps[0].prefers_to_matched(self._instance, self, left.first, ignore=left.second.ident) and self.matched(left.second) == [right[0]]:
+                if hosps[0].prefers_to_matched(
+                    self._instance, self, left.first, ignore=left.second.ident
+                ) and self.matched(left.second) == [right[0]]:
                     logger.debug("Satisfies CH3.4.1'")
                     ch3 = True
                 # CH3.4.2'
-                if hosps[0].prefers_to_matched(self._instance, self, left.second, ignore=left.first.ident) and self.matched(left.first) == [right[0]]:
+                if hosps[0].prefers_to_matched(
+                    self._instance, self, left.second, ignore=left.first.ident
+                ) and self.matched(left.first) == [right[0]]:
                     logger.debug("Satisfies CH3.4.2'")
                     ch3 = True
                 pass
             else:
-                if ((self.matched(left.first) == [hosps[0].ident] or (self.matched(left.second) == [hosps[0].ident])) and (hosps[0].prefers_couple_to_matched(self._instance, self, left, both_beat_both=False, strict=True, just_one=True))):
+                if (
+                    self.matched(left.first) == [hosps[0].ident]
+                    or (self.matched(left.second) == [hosps[0].ident])
+                ) and (
+                    hosps[0].prefers_couple_to_matched(
+                        self._instance,
+                        self,
+                        left,
+                        both_beat_both=False,
+                        strict=True,
+                        just_one=True,
+                    )
+                ):
                     logger.debug("Satisfies CH3.4")
                     ch3 = True
             # CH3.5
             if stability_type == STABILITY.MM:
-                if hosps[0].prefers_couple_to_matched(self._instance, self, left, both_beat_both=False, strict=True):
+                if hosps[0].prefers_couple_to_matched(
+                    self._instance, self, left, both_beat_both=False, strict=True
+                ):
                     logger.debug("Satisfies CH3.5'")
                     ch3 = True
             else:
-                if hosps[0].prefers_couple_to_matched(self._instance, self, left, both_beat_both=True, strict=True):
+                if hosps[0].prefers_couple_to_matched(
+                    self._instance, self, left, both_beat_both=True, strict=True
+                ):
                     logger.debug("Satisfies CH3.5")
                     ch3 = True
             if stability_type == STABILITY.BIS:
@@ -898,11 +976,17 @@ class Matching:
                     if couple is None:
                         # This matched doctor is not in a couple, so 3.6 cannot apply
                         continue
-                    if not (couple.first in self.matched(hosps[0]) and couple.second in self.matched(hosps[0])):
+                    if not (
+                        couple.first in self.matched(hosps[0])
+                        and couple.second in self.matched(hosps[0])
+                    ):
                         continue
-                    if not (hosps[0].prefers(left.first, couple.first) and hosps[0].prefers(left.second, couple.first) or
-                        hosps[0].prefers(left.first, couple.second) and hosps[0].prefers(left.second, couple.second)
-                        ):
+                    if not (
+                        hosps[0].prefers(left.first, couple.first)
+                        and hosps[0].prefers(left.second, couple.first)
+                        or hosps[0].prefers(left.first, couple.second)
+                        and hosps[0].prefers(left.second, couple.second)
+                    ):
                         logger.debug("Satisfies CH3.6")
                         ch3 = True
                         break

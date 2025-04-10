@@ -1,13 +1,11 @@
 """Test cases for solving SMTI instances."""
 
-
 from pyhrtc.fileio import read_hrtc
 from pyhrtc.models import MAX_SMTI_IP
 
 
 def test_solve():
-    """Solve simple instance
-    """
+    """Solve simple instance"""
     instance = read_hrtc("tests/testfiles/smti-simple.instance")
     model = MAX_SMTI_IP(instance)
     matching = model.solve()
@@ -19,8 +17,7 @@ def test_solve():
 
 
 def test_dummy_variables_simple():
-    """Solve simple instance using dummy variables
-    """
+    """Solve simple instance using dummy variables"""
     instance = read_hrtc("tests/testfiles/smti-simple.instance")
     model = MAX_SMTI_IP(instance)
     model.dummy_variables = True
@@ -29,8 +26,7 @@ def test_dummy_variables_simple():
 
 
 def test_grp_solve():
-    """Solve GRP instances
-    """
+    """Solve GRP instances"""
     instance = read_hrtc("tests/testfiles/smti-grp-simple.instance")
     model = MAX_SMTI_IP(instance)
     matching = model.solve()
@@ -43,8 +39,7 @@ def test_grp_solve():
 
 
 def test_grp_thresholds():
-    """Solve GRP instances with thresholding
-    """
+    """Solve GRP instances with thresholding"""
     instance = read_hrtc("tests/testfiles/smti-grp-thresholds.instance")
     model = MAX_SMTI_IP(instance)
     matching = model.solve()
@@ -63,8 +58,7 @@ def test_grp_thresholds():
 
 
 def test_grp_solve_weighted():
-    """Solve GRP instances
-    """
+    """Solve GRP instances"""
     instance = read_hrtc("tests/testfiles/smti-grp-diff-maxweight.instance")
     model = MAX_SMTI_IP(instance)
     matching = model.solve()

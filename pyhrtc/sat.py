@@ -40,31 +40,41 @@ def create_sat_smti(instance):
     # Clause 3
     for resident in instance.single_residents:
         for pref in range(resident.num_preferences):
-            encoding += "%d -%d 0" % (varmap[("r", resident.id, pref)],
-                                      varmap[("r", resident.id, pref)]+1)
+            encoding += "%d -%d 0" % (
+                varmap[("r", resident.id, pref)],
+                varmap[("r", resident.id, pref)] + 1,
+            )
     # Clause 4
     for hospital in instance.single_hospitals:
         for pref in range(hospital.num_preferences):
-            encoding += "%d -%d 0" % (varmap[("h", hospital.id, pref)],
-                                      varmap[("h", hospital.id, pref)]+1)
+            encoding += "%d -%d 0" % (
+                varmap[("h", hospital.id, pref)],
+                varmap[("h", hospital.id, pref)] + 1,
+            )
     for hospital in instance.hospitals:
         for resident in instance.single_residents:
             # Clause 5
             # Note that position_of and rank_of are two different things.
             p = resident.position_of(hospital)
             q = hospital.position_of(resident)
-            encoding += "-%d %d %d 0" % (varmap[("r", resident.id, p)],
-                                         varmap[("r", resident.id, p)]+1,
-                                         varmap[("h", hospital.id, q)])
-            encoding += "-%d %d -%d 0" % (varmap[("r", resident.id, p)],
-                                          varmap[("r", resident.id, p)]+1,
-                                          varmap[("h", hospital.id, q)]+1)
+            encoding += "-%d %d %d 0" % (
+                varmap[("r", resident.id, p)],
+                varmap[("r", resident.id, p)] + 1,
+                varmap[("h", hospital.id, q)],
+            )
+            encoding += "-%d %d -%d 0" % (
+                varmap[("r", resident.id, p)],
+                varmap[("r", resident.id, p)] + 1,
+                varmap[("h", hospital.id, q)] + 1,
+            )
             # Clause 6
-            encoding += "-%d %d %d 0" % (varmap[("h", hospital.id, q)],
-                                         varmap[("h", hospital.id, q)]+1,
-                                         varmap[("r", resident.id, p)])
-            encoding += "-%d %d -%d 0" % (varmap[("h", hospital.id, q)],
-                                          varmap[("h", hospital.id, q)]+1,
-                                          varmap[("r", resident.id, p)]+1)
-
-
+            encoding += "-%d %d %d 0" % (
+                varmap[("h", hospital.id, q)],
+                varmap[("h", hospital.id, q)] + 1,
+                varmap[("r", resident.id, p)],
+            )
+            encoding += "-%d %d -%d 0" % (
+                varmap[("h", hospital.id, q)],
+                varmap[("h", hospital.id, q)] + 1,
+                varmap[("r", resident.id, p)] + 1,
+            )

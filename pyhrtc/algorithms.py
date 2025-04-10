@@ -12,6 +12,7 @@ def connected_component_subgraphs(graph):
     for nodes in connected_components(graph):
         yield graph.subgraph(nodes)
 
+
 def max_card_matching(instance):
     """Given an instance, calculate the cardinality of the biggest matching.
     Note that this matching need not be, and probably won't be, stable.
@@ -38,7 +39,7 @@ def max_card_matching(instance):
     for verts in connected_components(graph):
         component = graph.subgraph(verts).copy()
         size += len(maximum_matching(component))
-    return int(size/2)
+    return int(size / 2)
 
 
 def max_weight_matching(instance):
@@ -55,8 +56,7 @@ def max_weight_matching(instance):
         raise Exception("Max weight matching needs a WeightedInstance")
     graph = NxGraph()
     if instance.number_of_couples_left() != 0:
-        raise Exception("Max weight matching does not "
-                        "currently support couples")
+        raise Exception("Max weight matching does not " "currently support couples")
     for left in instance.single_agents_left:
         graph.add_node(f"l{left.ident}", bipartite=0)
     for right in instance.single_agents_right:
@@ -66,11 +66,14 @@ def max_weight_matching(instance):
         for pref_group in left.preferences:
             for right_id in pref_group:
                 for cap in range(instance.single_agent_right(right_id).capacity):
-                    graph.add_edge(f"l{left.ident}", f"r{right_id}_{cap}",
-                                   weight=left.weight_of(right_id))
+                    graph.add_edge(
+                        f"l{left.ident}",
+                        f"r{right_id}_{cap}",
+                        weight=left.weight_of(right_id),
+                    )
     weight = 0
     for verts in connected_components(graph):
         component = graph.subgraph(verts).copy()
         for start, end in nx_max_weight(component):
-            weight += graph[start][end]['weight']
+            weight += graph[start][end]["weight"]
     return weight

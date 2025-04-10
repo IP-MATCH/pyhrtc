@@ -7,8 +7,7 @@ from pyhrtc.algorithms import max_card_matching
 
 
 def test_max_card_matching():
-    """Test that max_card_matching changes
-    """
+    """Test that max_card_matching changes"""
     instance = read_hrtc("tests/testfiles/smti-grp-simple.instance")
     assert max_card_matching(instance) == 3
     instance.threshold(50)
@@ -25,8 +24,7 @@ def test_threshold_above_kept():
 
 
 def test_empty_preferences():
-    """Ensure that nothing breaks if we remove all preferences of an agent.
-    """
+    """Ensure that nothing breaks if we remove all preferences of an agent."""
     instance = read_hrtc("tests/testfiles/smti-grp-simple.instance")
     assert instance.number_of_single_agents_right() == 3
     assert instance.single_agent_right("2").num_preferences == 3

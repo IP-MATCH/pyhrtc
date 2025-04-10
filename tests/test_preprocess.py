@@ -1,12 +1,10 @@
 """Test cases for preprocessing."""
 
-
 from pyhrtc.fileio import read_hrtc
 
 
 def test_trims():
-    """Test the trimming of preference lists
-    """
+    """Test the trimming of preference lists"""
     instance = read_hrtc("tests/testfiles/test1.instance")
     assert instance.number_of_single_agents_left() == 2
     assert instance.number_of_couples_left() == 0
@@ -18,8 +16,7 @@ def test_trims():
 
 
 def test_preprocess():
-    """Test that preprocessing works as expected.
-    """
+    """Test that preprocessing works as expected."""
     instance = read_hrtc("tests/testfiles/test1.instance")
     assert instance.number_of_single_agents_left() == 2
     assert instance.number_of_couples_left() == 0

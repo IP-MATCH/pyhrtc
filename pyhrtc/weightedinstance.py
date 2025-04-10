@@ -5,8 +5,7 @@ from pyhrtc.basics import Agent, Instance
 
 
 class WeightedAgent(Agent):
-    """An agent in an instance of SMTI-GRP.
-    """
+    """An agent in an instance of SMTI-GRP."""
 
     def __init__(self, ident, capacity=1):
         super().__init__(ident, capacity=capacity)
@@ -58,8 +57,7 @@ class WeightedAgent(Agent):
         :type threshold: integer
         """
         self._sort_preferences()
-        while (self._sorted_preferences and
-               self._sorted_preferences[-1][1] < threshold):
+        while self._sorted_preferences and self._sorted_preferences[-1][1] < threshold:
             ident, _ = self._sorted_preferences.pop()
             del self._weights[ident]
         self._num_preferences = None
@@ -84,6 +82,7 @@ class WeightedAgent(Agent):
 
     def preference_string(self):
         """Returns the string of preferences for this agent."""
+
         def format_agent(ident):
             """Show an agent as their id and weight."""
             return "%s (%f)" % (ident, self._weights[ident])
@@ -96,19 +95,18 @@ class WeightedAgent(Agent):
                 return ""
             if len(tie_as_list) == 1:
                 return format_agent(tie_as_list[0])
-            return "(%s)" % (" ".join([format_agent(ident)
-                                       for ident in tie_as_list]))
+            return "(%s)" % (" ".join([format_agent(ident) for ident in tie_as_list]))
+
         return " ".join([format_tie(tie) for tie in self.preferences])
 
     def _sort_preferences(self):
-        """Sorts the preferences by score, highest to lowest.
-        """
+        """Sorts the preferences by score, highest to lowest."""
         # Do nothing if the list is already sorted.
         if self._sorted_preferences is not None:
             return
-        self._sorted_preferences = sorted(self._preference_weights,
-                                          reverse=True,
-                                          key=lambda x: x[1])
+        self._sorted_preferences = sorted(
+            self._preference_weights, reverse=True, key=lambda x: x[1]
+        )
         self._build_preferences()
 
     def _build_preferences(self):
@@ -128,10 +126,11 @@ class WeightedAgent(Agent):
             self._preferences.append(group)
 
     def __str__(self):
-        """A human readable string representation of this Agent.
-        """
-        return (f"WeightedAgent {self._ident} with preferences: "
-                "{self.preference_string()}")
+        """A human readable string representation of this Agent."""
+        return (
+            f"WeightedAgent {self._ident} with preferences: "
+            "{self.preference_string()}"
+        )
 
 
 class WeightedInstance(Instance):
@@ -143,6 +142,7 @@ class WeightedInstance(Instance):
     :param rights: The other set of WeightedAgent objects
     :type rightss: Dict[:class:`WeightedAgent`]
     """
+
     def __init__(self, lefts, rights):
         super().__init__(single_agents_left=lefts, single_agents_right=rights)
 
@@ -173,8 +173,9 @@ class WeightedInstance(Instance):
         that Agent number left_index on the left is matching with Agent
         right_index on the right.
         """
-        return sum(self._single_agents_left[l].weight_of(r)
-                   for l, r in matching.items())
+        return sum(
+            self._single_agents_left[l].weight_of(r) for l, r in matching.items()
+        )
 
     @property
     def agents_left(self):
@@ -194,10 +195,11 @@ class WeightedInstance(Instance):
         return self.number_of_single_agents_right
 
     def __str__(self):
-        """A human readable string representation of this instance.
-        """
-        return (f"WeightedInstance with {self.number_of_single_agents_left()} "
-                "single agents on the left, {self.number_of_couples_left()} "
-                "couples on the left and "
-                "{self.number_of_single_agents_right()} single agents "
-                "on the right")
+        """A human readable string representation of this instance."""
+        return (
+            f"WeightedInstance with {self.number_of_single_agents_left()} "
+            "single agents on the left, {self.number_of_couples_left()} "
+            "couples on the left and "
+            "{self.number_of_single_agents_right()} single agents "
+            "on the right"
+        )
